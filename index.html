@@ -1326,8 +1326,8 @@ async function loadOverview() {
     document.getElementById('maintenanceWarn').style.display = data.maintenanceMode ? '' : 'none';
 
     // Today's messages chart (by hour)
-    const msgData = await api('GET', '/admin/stats/messages');
-    renderMsgTodayChart(msgData);
+    const msgRes = await api('GET', '/admin/stats/messages');
+    renderMsgTodayChart(msgRes.data || msgRes);
   } catch(e) { toast(e.message, 'error'); }
 
   // Activity feed
@@ -1386,14 +1386,14 @@ function renderMsgTodayChart(data) {
 // ══════════════════════════════════════════════════
 async function loadAnalytics() {
   try {
-    const [dauData, msgData, featureData] = await Promise.all([
+    const [dauRes, msgRes, featureRes] = await Promise.all([
       api('GET', '/admin/stats/dau'),
       api('GET', '/admin/stats/messages'),
       api('GET', '/admin/stats/features'),
     ]);
-    renderDAUChart(dauData);
-    renderMsgsChart(msgData);
-    renderFeatureTable(featureData);
+    renderDAUChart(dauRes.data || dauRes);
+    renderMsgsChart(msgRes.data || msgRes);
+    renderFeatureTable(featureRes.data || featureRes);
   } catch(e) { toast(e.message, 'error'); }
 }
 
@@ -1700,7 +1700,8 @@ async function loadReports() {
   const tbody = document.getElementById('reportsBody');
   tbody.innerHTML = '<tr class="loading-row"><td colspan="5"><div class="skeleton" style="height:14px;width:60%"></div></td></tr>';
   try {
-    const data = await api('GET', '/admin/reports');
+    const res = await api('GET', '/admin/reports');
+    const data = res.reports || res;
     if (!data?.length) {
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:24px">No pending reports 🎉</td></tr>';
       return;
@@ -1763,7 +1764,8 @@ async function loadLoginLogs() {
 async function loadIPBlacklist() {
   const tbody = document.getElementById('ipBlacklistBody');
   try {
-    const data = await api('GET', '/admin/security/ip-blacklist');
+    const res = await api('GET', '/admin/security/ip-blacklist');
+    const data = res.blacklist || res;
     if (!data?.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-faint);padding:16px">No blocked IPs</td></tr>'; return; }
     tbody.innerHTML = data.map(ip => `
       <tr>
@@ -1803,7 +1805,8 @@ async function loadSessions() {
   const tbody = document.getElementById('sessionsBody');
   tbody.innerHTML = '<tr class="loading-row"><td colspan="5"><div class="skeleton" style="height:14px;width:70%"></div></td></tr>';
   try {
-    const data = await api('GET', '/admin/security/sessions');
+    const res = await api('GET', '/admin/security/sessions');
+    const data = res.sessions || res;
     document.getElementById('sessionCount').textContent = `${data?.length||0} active sessions`;
     if (!data?.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:24px">No active sessions</td></tr>'; return; }
     tbody.innerHTML = data.map(s => `
