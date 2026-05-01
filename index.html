@@ -1158,15 +1158,20 @@ let userSearchTimer = null;
 // ══════════════════════════════════════════════════
 async function initFirebase() {
   try {
-    const res = await fetch(`${CONFIG.serverUrl}/firebase-config`);
-    if (!res.ok) throw new Error('Config fetch failed');
-    const cfg = await res.json();
+    const cfg = {
+      apiKey: "AIzaSyBclTC8gK3QKi1X6Q-YCK2jT38yJ83xOcQ",
+      authDomain: "chat-app-a0f95.firebaseapp.com",
+      projectId: "chat-app-a0f95",
+      storageBucket: "chat-app-a0f95.appspot.com",
+      messagingSenderId: "754786153113",
+      appId: "1:754786153113:web:7543bfb097732ad229fe08",
+      measurementId: "G-JFKWR83KYJ"
+    };
     if (!firebase.apps.length) firebase.initializeApp(cfg);
     else firebase.app();
     CONFIG.firebase = cfg;
   } catch (e) {
-    // Fallback: if /firebase-config not available, show error
-    document.getElementById('loginErr').textContent = 'Cannot reach server. Is it running?';
+    document.getElementById('loginErr').textContent = 'Firebase initialization failed.';
   }
 }
 
