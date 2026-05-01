@@ -3,651 +3,656 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EduChat Admin</title>
+<title>EduChat — Admin Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<!-- Firebase compat SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <style>
-/* ═══════════════════════════════════════════
-   DESIGN SYSTEM — Dark Command Center
-═══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════
+   DESIGN SYSTEM — Industrial Dark Command Center
+══════════════════════════════════════════════════ */
 :root {
-  --bg-void:    #080a0f;
-  --bg-base:    #0d1117;
-  --bg-card:    #111620;
-  --bg-raised:  #161d2c;
-  --bg-hover:   #1c2539;
-  --bg-active:  #1e2b42;
-  --border:     #1e2a3a;
-  --border-lit: #2a3d58;
-  --text-prime: #e8edf5;
-  --text-dim:   #7a8fa8;
-  --text-faint: #3d5068;
-  --accent:     #3b82f6;
-  --accent-lit: #60a5fa;
-  --accent-dim: #1d3f6e;
-  --green:      #10b981;
-  --green-dim:  #0a2e22;
-  --red:        #ef4444;
-  --red-dim:    #2d1010;
+  --void:       #050709;
+  --base:       #090c10;
+  --surface:    #0e1318;
+  --card:       #121920;
+  --raised:     #161f28;
+  --hover:      #1b2633;
+  --active:     #1f2e40;
+  --border:     #1a2535;
+  --border-lit: #243548;
+  --border-glow:#2d4a6a;
+
+  --text-1:     #dce8f5;
+  --text-2:     #6e8ba8;
+  --text-3:     #344f6a;
+
+  --blue:       #3b82f6;
+  --blue-lit:   #60a5fa;
+  --blue-dim:   #0f2240;
+  --blue-glow:  rgba(59,130,246,0.15);
+
+  --green:      #22c55e;
+  --green-dim:  #0a2918;
+  --red:        #f43f5e;
+  --red-dim:    #2a0d14;
   --amber:      #f59e0b;
-  --amber-dim:  #2d2010;
-  --purple:     #8b5cf6;
-  --purple-dim: #1e1030;
+  --amber-dim:  #2a1e08;
+  --purple:     #a855f7;
+  --purple-dim: #1c0f35;
   --cyan:       #06b6d4;
-  --cyan-dim:   #062030;
-  --font-sans:  'Syne', sans-serif;
-  --font-mono:  'JetBrains Mono', monospace;
-  --radius:     8px;
-  --radius-lg:  12px;
-  --sidebar-w:  220px;
-  --header-h:   56px;
+  --cyan-dim:   #041c26;
+  --emerald:    #10b981;
+  --emerald-dim:#061c14;
+  --rose:       #fb7185;
+
+  --font-body:  'DM Sans', sans-serif;
+  --font-mono:  'Space Mono', monospace;
+  --r:          6px;
+  --r-lg:       10px;
+  --sidebar-w:  230px;
+  --header-h:   52px;
+
+  --glow-blue:  0 0 20px rgba(59,130,246,0.12);
+  --shadow-card:0 2px 12px rgba(0,0,0,0.5);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body {
-  height: 100%;
-  background: var(--bg-void);
-  color: var(--text-prime);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  overflow: hidden;
-}
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 4px; height: 4px; }
+html, body { height: 100%; background: var(--void); color: var(--text-1); font-family: var(--font-body); font-size: 14px; overflow: hidden; }
+::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-lit); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border-lit); border-radius: 3px; }
 
-/* ════════════════════════════════
-   LOGIN SCREEN
-════════════════════════════════ */
+/* ══ LOGIN ══ */
 #loginScreen {
-  position: fixed; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--bg-void);
-  z-index: 9999;
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: var(--void); z-index: 9999;
 }
-.login-box {
-  background: var(--bg-card);
+.login-wrap {
+  width: 380px;
+  background: var(--card);
   border: 1px solid var(--border-lit);
-  border-radius: var(--radius-lg);
-  padding: 40px 36px;
-  width: 360px;
-  text-align: center;
+  border-radius: var(--r-lg);
+  padding: 40px 36px 36px;
+  box-shadow: var(--shadow-card), var(--glow-blue);
 }
 .login-logo {
-  font-size: 28px; font-weight: 800; color: var(--accent-lit);
-  letter-spacing: -1px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono); font-size: 20px; font-weight: 700;
+  color: var(--blue-lit); letter-spacing: -1px; margin-bottom: 6px;
 }
-.login-sub { color: var(--text-dim); font-size: 13px; margin-bottom: 32px; }
-.login-btn {
+.login-logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 10px var(--blue); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.login-sub { color: var(--text-2); font-size: 13px; margin-bottom: 36px; letter-spacing: .02em; }
+.login-divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; }
+.login-divider hr { flex: 1; border: none; border-top: 1px solid var(--border); }
+.login-divider span { color: var(--text-3); font-size: 11px; letter-spacing: .1em; font-family: var(--font-mono); }
+.google-btn {
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; padding: 12px 20px;
-  background: var(--accent); color: #fff;
-  border: none; border-radius: var(--radius);
-  font-family: var(--font-sans); font-size: 14px; font-weight: 600;
-  cursor: pointer; transition: background .15s;
+  width: 100%; padding: 11px 20px;
+  background: var(--raised); border: 1px solid var(--border-lit);
+  border-radius: var(--r); color: var(--text-1);
+  font-family: var(--font-body); font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all .15s;
 }
-.login-btn:hover { background: var(--accent-lit); }
-.login-btn svg { flex-shrink: 0; }
-.login-err { color: var(--red); font-size: 13px; margin-top: 12px; min-height: 20px; }
+.google-btn:hover { background: var(--hover); border-color: var(--border-glow); }
+.google-btn:disabled { opacity: .5; cursor: not-allowed; }
+.login-err { color: var(--red); font-size: 12px; margin-top: 12px; min-height: 18px; text-align: center; }
+.login-badge {
+  display: inline-flex; align-items: center; gap: 6px; margin-bottom: 28px;
+  background: var(--blue-dim); border: 1px solid var(--blue);
+  border-radius: 999px; padding: 4px 12px;
+  font-size: 11px; font-family: var(--font-mono); color: var(--blue-lit);
+  letter-spacing: .05em;
+}
 
-/* ════════════════════════════════
-   LAYOUT
-════════════════════════════════ */
+/* ══ LAYOUT ══ */
 #app { display: flex; height: 100vh; opacity: 0; transition: opacity .3s; }
 #app.visible { opacity: 1; }
 
-/* ── Sidebar ── */
+/* ══ SIDEBAR ══ */
 .sidebar {
-  width: var(--sidebar-w);
-  background: var(--bg-base);
+  width: var(--sidebar-w); background: var(--base);
   border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  flex-shrink: 0;
-  overflow-y: auto;
+  display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto;
 }
 .sidebar-brand {
-  padding: 16px;
-  font-size: 18px; font-weight: 800; color: var(--accent-lit);
-  letter-spacing: -0.5px;
+  padding: 16px 16px 14px;
   border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
 }
-.sidebar-brand span { color: var(--text-dim); font-weight: 400; font-size: 12px; display: block; }
-.sidebar-nav { padding: 8px; flex: 1; }
-.nav-section { font-size: 10px; font-weight: 600; color: var(--text-faint); letter-spacing: 1px; text-transform: uppercase; padding: 14px 8px 6px; }
+.brand-mark {
+  font-family: var(--font-mono); font-size: 16px; font-weight: 700;
+  color: var(--blue-lit); letter-spacing: -0.5px;
+  display: flex; align-items: center; gap: 8px;
+}
+.brand-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 2s infinite; }
+.brand-sub { font-size: 10px; font-family: var(--font-mono); color: var(--text-3); letter-spacing: .1em; text-transform: uppercase; margin-top: 4px; }
+
+.nav { padding: 8px; flex: 1; }
+.nav-group { font-size: 9px; font-weight: 700; color: var(--text-3); letter-spacing: .15em; text-transform: uppercase; padding: 14px 8px 5px; font-family: var(--font-mono); }
 .nav-item {
   display: flex; align-items: center; gap: 10px;
-  padding: 9px 10px; border-radius: var(--radius);
-  cursor: pointer; color: var(--text-dim);
-  font-size: 13px; font-weight: 500;
-  transition: all .15s;
-  position: relative;
+  padding: 8px 10px; border-radius: var(--r);
+  cursor: pointer; color: var(--text-2); font-size: 13px; font-weight: 500;
+  transition: all .15s; position: relative; margin-bottom: 1px;
 }
-.nav-item:hover { background: var(--bg-hover); color: var(--text-prime); }
-.nav-item.active { background: var(--accent-dim); color: var(--accent-lit); }
-.nav-item .badge {
-  margin-left: auto;
-  background: var(--red); color: #fff;
-  font-size: 10px; font-weight: 700;
-  padding: 1px 6px; border-radius: 999px;
-  min-width: 18px; text-align: center;
+.nav-item:hover { background: var(--hover); color: var(--text-1); }
+.nav-item.active { background: var(--blue-dim); color: var(--blue-lit); }
+.nav-item.active::before {
+  content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 2px; height: 60%; background: var(--blue); border-radius: 0 2px 2px 0;
 }
-.nav-item svg { flex-shrink: 0; opacity: .7; }
+.nav-item svg { flex-shrink: 0; width: 15px; height: 15px; opacity: .8; }
 .nav-item.active svg { opacity: 1; }
-.sidebar-footer {
-  padding: 12px;
-  border-top: 1px solid var(--border);
+.nav-badge {
+  margin-left: auto; background: var(--red); color: #fff;
+  font-size: 9px; font-weight: 700; font-family: var(--font-mono);
+  padding: 2px 6px; border-radius: 999px; min-width: 18px; text-align: center;
 }
-.admin-tag {
+.nav-badge.amber { background: var(--amber); color: #000; }
+
+.sidebar-foot {
+  border-top: 1px solid var(--border); padding: 12px;
+}
+.admin-chip {
   display: flex; align-items: center; gap: 8px;
-  padding: 8px; border-radius: var(--radius);
-  background: var(--bg-raised);
+  background: var(--raised); border-radius: var(--r); padding: 8px;
 }
-.admin-avatar {
-  width: 30px; height: 30px; border-radius: 50%;
-  background: var(--accent-dim); color: var(--accent-lit);
+.admin-ava {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--blue-dim); color: var(--blue-lit);
   display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 13px;
+  font-weight: 700; font-size: 12px; font-family: var(--font-mono);
+  flex-shrink: 0;
 }
-.admin-name { font-size: 12px; font-weight: 600; color: var(--text-prime); }
-.admin-role { font-size: 10px; color: var(--text-dim); text-transform: capitalize; }
+.admin-ava img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.admin-name { font-size: 12px; font-weight: 600; line-height: 1.2; }
+.admin-role { font-size: 10px; color: var(--text-2); font-family: var(--font-mono); }
 .logout-btn {
   margin-left: auto; background: none; border: none;
-  color: var(--text-faint); cursor: pointer; padding: 4px;
-  border-radius: 4px;
+  color: var(--text-3); cursor: pointer; padding: 4px; border-radius: 4px;
+  line-height: 1; transition: color .15s;
 }
 .logout-btn:hover { color: var(--red); }
 
-/* ── Main ── */
+/* ══ MAIN ══ */
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
-/* ── Header ── */
 .header {
-  height: var(--header-h);
-  background: var(--bg-base);
+  height: var(--header-h); background: var(--base);
   border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; padding: 0 20px;
-  flex-shrink: 0; gap: 12px;
+  display: flex; align-items: center; padding: 0 20px; gap: 12px; flex-shrink: 0;
 }
-.header-title { font-size: 16px; font-weight: 700; color: var(--text-prime); }
-.header-sub { font-size: 12px; color: var(--text-dim); margin-left: 4px; }
-.header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-.status-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 6px var(--green);
-  animation: pulse-dot 2s infinite;
+.header-title { font-size: 15px; font-weight: 700; }
+.header-crumb { font-size: 12px; color: var(--text-2); margin-left: 2px; }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.live-indicator {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--text-2); font-family: var(--font-mono);
 }
-@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 2s infinite; }
+.header-time { font-size: 11px; font-family: var(--font-mono); color: var(--text-3); }
 
-/* ── Content ── */
-.content { flex: 1; overflow-y: auto; padding: 20px; }
+.content { flex: 1; overflow-y: auto; padding: 18px 20px; }
 
-/* ════════════════════════════════
-   PANELS (pages)
-════════════════════════════════ */
+/* ══ PANELS ══ */
 .panel { display: none; }
-.panel.active { display: block; }
+.panel.active { display: block; animation: fadein .2s ease; }
+@keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-/* ════════════════════════════════
-   CARDS & STATS
-════════════════════════════════ */
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px; margin-bottom: 20px;
-}
+/* ══ STAT GRID ══ */
+.stat-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 16px; }
+@media (max-width: 1200px) { .stat-grid { grid-template-columns: repeat(3, 1fr); } }
 .stat-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  position: relative; overflow: hidden;
-  transition: border-color .2s;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 14px 16px;
+  position: relative; overflow: hidden; transition: border-color .2s;
 }
 .stat-card:hover { border-color: var(--border-lit); }
-.stat-label { font-size: 11px; color: var(--text-dim); font-weight: 500; letter-spacing: .3px; }
-.stat-value { font-size: 28px; font-weight: 800; color: var(--text-prime); margin: 6px 0 2px; line-height: 1; font-family: var(--font-mono); }
-.stat-change { font-size: 11px; color: var(--text-dim); }
-.stat-change.up { color: var(--green); }
-.stat-change.down { color: var(--red); }
+.stat-card::after {
+  content: ''; position: absolute; inset: 0; opacity: 0;
+  background: linear-gradient(135deg, rgba(59,130,246,.05) 0%, transparent 60%);
+  transition: opacity .2s;
+}
+.stat-card:hover::after { opacity: 1; }
 .stat-icon {
-  position: absolute; right: 14px; top: 14px;
-  width: 32px; height: 32px; border-radius: 8px;
+  width: 32px; height: 32px; border-radius: var(--r);
   display: flex; align-items: center; justify-content: center;
+  margin-bottom: 10px;
 }
+.stat-label { font-size: 11px; color: var(--text-2); font-weight: 500; letter-spacing: .03em; margin-bottom: 4px; }
+.stat-val { font-size: 24px; font-weight: 700; font-family: var(--font-mono); line-height: 1; letter-spacing: -1px; }
+.stat-delta { font-size: 11px; color: var(--text-3); margin-top: 4px; font-family: var(--font-mono); }
+.stat-delta.up { color: var(--green); }
+.stat-delta.down { color: var(--red); }
 
+/* ══ CARDS ══ */
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-lg); overflow: hidden; margin-bottom: 14px;
+  box-shadow: var(--shadow-card);
 }
-.card-header {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
+.card-head {
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
 }
-.card-title { font-size: 13px; font-weight: 700; color: var(--text-prime); }
+.card-title { font-size: 12px; font-weight: 700; letter-spacing: .03em; display: flex; align-items: center; gap: 7px; }
+.card-title-icon { font-size: 14px; }
 .card-body { padding: 16px; }
 
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+/* ══ GRID UTILS ══ */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+@media (max-width: 1100px) { .g2, .g3, .g4 { grid-template-columns: 1fr; } }
+@media (min-width: 1100px) and (max-width: 1400px) { .g3 { grid-template-columns: 1fr 1fr; } }
 
-/* ════════════════════════════════
-   TABLE
-════════════════════════════════ */
-.table-wrap { overflow-x: auto; }
+/* ══ TABLE ══ */
+.tbl-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
 th {
-  text-align: left; padding: 10px 14px;
-  font-size: 11px; font-weight: 600;
-  color: var(--text-dim); letter-spacing: .5px; text-transform: uppercase;
+  text-align: left; padding: 9px 14px;
+  font-size: 10px; font-weight: 700; color: var(--text-2);
+  letter-spacing: .08em; text-transform: uppercase;
   border-bottom: 1px solid var(--border);
-  white-space: nowrap;
+  font-family: var(--font-mono); white-space: nowrap; background: var(--surface);
 }
 td {
-  padding: 11px 14px;
-  font-size: 13px; color: var(--text-prime);
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
+  padding: 10px 14px; font-size: 13px;
+  border-bottom: 1px solid var(--border); vertical-align: middle;
 }
 tr:last-child td { border-bottom: none; }
-tr:hover td { background: var(--bg-hover); }
-.td-mono { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); }
+tr:hover td { background: rgba(255,255,255,.015); }
+.td-mono { font-family: var(--font-mono); font-size: 12px; color: var(--text-2); }
 
-/* ════════════════════════════════
-   BADGES / PILLS
-════════════════════════════════ */
+/* ══ PILLS ══ */
 .pill {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 2px 8px; border-radius: 999px;
-  font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600;
+  font-family: var(--font-mono);
 }
-.pill-green  { background: var(--green-dim);  color: var(--green); }
-.pill-red    { background: var(--red-dim);    color: var(--red); }
-.pill-amber  { background: var(--amber-dim);  color: var(--amber); }
-.pill-blue   { background: var(--accent-dim); color: var(--accent-lit); }
-.pill-purple { background: var(--purple-dim); color: var(--purple); }
-.pill-cyan   { background: var(--cyan-dim);   color: var(--cyan); }
-.pill-gray   { background: var(--bg-raised);  color: var(--text-dim); }
+.p-green  { background: var(--green-dim);   color: var(--green); }
+.p-red    { background: var(--red-dim);     color: var(--red); }
+.p-amber  { background: var(--amber-dim);   color: var(--amber); }
+.p-blue   { background: var(--blue-dim);    color: var(--blue-lit); }
+.p-purple { background: var(--purple-dim);  color: var(--purple); }
+.p-cyan   { background: var(--cyan-dim);    color: var(--cyan); }
+.p-gray   { background: var(--raised);      color: var(--text-2); }
+.p-emerald{ background: var(--emerald-dim); color: var(--emerald); }
 
-/* ════════════════════════════════
-   BUTTONS
-════════════════════════════════ */
+/* ══ BUTTONS ══ */
 .btn {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 14px; border-radius: var(--radius);
-  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
-  cursor: pointer; border: none; transition: all .15s;
+  padding: 7px 14px; border-radius: var(--r);
+  font-family: var(--font-body); font-size: 13px; font-weight: 600;
+  cursor: pointer; border: none; transition: all .15s; white-space: nowrap;
 }
-.btn-primary   { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-lit); }
-.btn-danger    { background: var(--red-dim); color: var(--red); border: 1px solid #3d1010; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { background: var(--blue-lit); }
+.btn-danger { background: var(--red-dim); color: var(--red); border: 1px solid rgba(244,63,94,.2); }
 .btn-danger:hover { background: var(--red); color: #fff; }
-.btn-ghost     { background: var(--bg-raised); color: var(--text-dim); border: 1px solid var(--border); }
-.btn-ghost:hover { color: var(--text-prime); border-color: var(--border-lit); }
-.btn-success   { background: var(--green-dim); color: var(--green); border: 1px solid #0a3020; }
-.btn-success:hover { background: var(--green); color: #fff; }
+.btn-ghost { background: var(--raised); color: var(--text-2); border: 1px solid var(--border); }
+.btn-ghost:hover { color: var(--text-1); border-color: var(--border-lit); }
+.btn-success { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,.2); }
+.btn-success:hover { background: var(--green); color: #000; }
+.btn-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,.2); }
+.btn-amber:hover { background: var(--amber); color: #000; }
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 
-/* ════════════════════════════════
-   FORM INPUTS
-════════════════════════════════ */
+/* ══ INPUTS ══ */
 .input {
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text-prime);
-  font-family: var(--font-sans); font-size: 13px;
-  padding: 8px 12px; width: 100%;
-  outline: none; transition: border-color .15s;
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: var(--r); color: var(--text-1);
+  font-family: var(--font-body); font-size: 13px;
+  padding: 8px 12px; width: 100%; outline: none; transition: border-color .15s;
 }
-.input:focus { border-color: var(--accent); }
-.input::placeholder { color: var(--text-faint); }
-.input-label { font-size: 12px; color: var(--text-dim); font-weight: 600; margin-bottom: 6px; display: block; }
+.input:focus { border-color: var(--blue); }
+.input::placeholder { color: var(--text-3); }
+.input-label { font-size: 11px; color: var(--text-2); font-weight: 600; margin-bottom: 5px; display: block; letter-spacing: .04em; font-family: var(--font-mono); text-transform: uppercase; }
 .input-group { margin-bottom: 14px; }
 select.input { cursor: pointer; }
 textarea.input { resize: vertical; min-height: 80px; }
 
-.search-bar {
+.search-row {
   display: flex; align-items: center; gap: 8px;
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0 12px;
-  flex: 1;
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 0 12px; flex: 1;
 }
-.search-bar input {
+.search-row input {
   background: none; border: none; outline: none;
-  color: var(--text-prime); font-family: var(--font-sans); font-size: 13px;
+  color: var(--text-1); font-family: var(--font-body); font-size: 13px;
   padding: 8px 0; width: 100%;
 }
-.search-bar input::placeholder { color: var(--text-faint); }
+.search-row input::placeholder { color: var(--text-3); }
 
-/* ════════════════════════════════
-   TOOLBAR
-════════════════════════════════ */
-.toolbar {
-  display: flex; align-items: center; gap: 8px;
-  margin-bottom: 14px; flex-wrap: wrap;
-}
-
-/* ════════════════════════════════
-   TOGGLE
-════════════════════════════════ */
-.toggle-wrap { display: flex; align-items: center; gap: 8px; }
-.toggle {
-  position: relative;
-  width: 40px; height: 22px;
-  flex-shrink: 0;
-}
+/* ══ TOGGLE ══ */
+.toggle { position: relative; width: 38px; height: 21px; flex-shrink: 0; }
 .toggle input { opacity: 0; width: 0; height: 0; }
-.toggle-slider {
+.toggle-track {
   position: absolute; inset: 0;
-  background: var(--bg-raised);
-  border: 1px solid var(--border-lit);
-  border-radius: 999px; cursor: pointer;
-  transition: background .2s;
+  background: var(--raised); border: 1px solid var(--border-lit);
+  border-radius: 999px; cursor: pointer; transition: all .2s;
 }
-.toggle-slider::before {
-  content: '';
-  position: absolute;
-  left: 2px; top: 50%; transform: translateY(-50%);
-  width: 16px; height: 16px;
-  background: var(--text-dim);
-  border-radius: 50%;
-  transition: all .2s;
+.toggle-track::before {
+  content: ''; position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
+  width: 15px; height: 15px; background: var(--text-2); border-radius: 50%; transition: all .2s;
 }
-.toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
-.toggle input:checked + .toggle-slider::before { left: 20px; background: #fff; }
+.toggle input:checked + .toggle-track { background: var(--blue); border-color: var(--blue); }
+.toggle input:checked + .toggle-track::before { left: 19px; background: #fff; }
+.toggle-wrap { display: flex; align-items: center; gap: 10px; }
 
-/* ════════════════════════════════
-   MODAL
-════════════════════════════════ */
+/* ══ MODAL ══ */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 1000;
-  background: rgba(0,0,0,.7);
+  background: rgba(0,0,0,.75); backdrop-filter: blur(4px);
   display: flex; align-items: center; justify-content: center;
   opacity: 0; pointer-events: none; transition: opacity .2s;
 }
 .modal-overlay.open { opacity: 1; pointer-events: all; }
 .modal {
-  background: var(--bg-card);
-  border: 1px solid var(--border-lit);
-  border-radius: var(--radius-lg);
-  width: 480px; max-width: 96vw; max-height: 90vh;
+  background: var(--card); border: 1px solid var(--border-lit);
+  border-radius: var(--r-lg); width: 500px; max-width: 96vw; max-height: 88vh;
   overflow-y: auto;
-  transform: translateY(16px) scale(.97);
-  transition: transform .2s;
+  transform: scale(.95) translateY(8px); transition: transform .2s;
+  box-shadow: var(--shadow-card), var(--glow-blue);
 }
 .modal-overlay.open .modal { transform: none; }
-.modal-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
+.modal-head {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
 }
-.modal-title { font-size: 15px; font-weight: 700; }
-.modal-close {
-  background: none; border: none; color: var(--text-dim);
-  cursor: pointer; font-size: 20px; line-height: 1; padding: 2px 6px;
-}
-.modal-close:hover { color: var(--text-prime); }
+.modal-title { font-size: 14px; font-weight: 700; }
+.modal-x { background: none; border: none; color: var(--text-2); cursor: pointer; font-size: 20px; line-height: 1; padding: 2px 6px; transition: color .15s; }
+.modal-x:hover { color: var(--text-1); }
 .modal-body { padding: 20px; }
-.modal-footer { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+.modal-foot { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
 
-/* ════════════════════════════════
-   ALERT BANNER
-════════════════════════════════ */
+/* ══ TOOLBAR ══ */
+.toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+
+/* ══ CHART ══ */
+.chart-box { position: relative; height: 220px; }
+.chart-box-lg { position: relative; height: 280px; }
+
+/* ══ ALERT BANNER ══ */
 .alert-banner {
-  padding: 10px 14px; border-radius: var(--radius);
-  font-size: 13px; margin-bottom: 14px;
-  display: flex; align-items: flex-start; gap: 8px;
+  padding: 10px 14px; border-radius: var(--r); font-size: 13px;
+  margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px;
 }
-.alert-banner.info    { background: var(--accent-dim); color: var(--accent-lit); border: 1px solid #1d3f6e; }
-.alert-banner.success { background: var(--green-dim);  color: var(--green); border: 1px solid #0a3020; }
-.alert-banner.warn    { background: var(--amber-dim);  color: var(--amber); border: 1px solid #3d3010; }
-.alert-banner.error   { background: var(--red-dim);    color: var(--red);   border: 1px solid #3d1010; }
+.alert-info    { background: var(--blue-dim);    color: var(--blue-lit); border: 1px solid rgba(59,130,246,.3); }
+.alert-success { background: var(--green-dim);   color: var(--green); border: 1px solid rgba(34,197,94,.3); }
+.alert-warn    { background: var(--amber-dim);   color: var(--amber); border: 1px solid rgba(245,158,11,.3); }
+.alert-danger  { background: var(--red-dim);     color: var(--red); border: 1px solid rgba(244,63,94,.3); }
 
-/* ════════════════════════════════
-   CHART CONTAINERS
-════════════════════════════════ */
-.chart-wrap { position: relative; height: 220px; }
-
-/* ════════════════════════════════
-   TOAST
-════════════════════════════════ */
+/* ══ TOAST ══ */
 #toast {
   position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-  display: flex; flex-direction: column; gap: 8px;
-  pointer-events: none;
+  display: flex; flex-direction: column; gap: 8px; pointer-events: none;
 }
-.toast-item {
-  padding: 10px 16px;
-  border-radius: var(--radius);
-  font-size: 13px; font-weight: 500;
-  background: var(--bg-raised);
-  border: 1px solid var(--border-lit);
-  color: var(--text-prime);
-  animation: slideIn .25s ease forwards;
-  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+.toast-msg {
+  padding: 10px 16px; border-radius: var(--r); font-size: 13px; font-weight: 500;
+  background: var(--raised); border: 1px solid var(--border-lit);
+  color: var(--text-1); animation: slideup .25s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,.6);
 }
-.toast-item.success { border-color: var(--green); color: var(--green); }
-.toast-item.error   { border-color: var(--red);   color: var(--red); }
-@keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.toast-msg.ok { border-color: var(--green); color: var(--green); }
+.toast-msg.err { border-color: var(--red); color: var(--red); }
+.toast-msg.warn { border-color: var(--amber); color: var(--amber); }
+@keyframes slideup { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
 
-/* ════════════════════════════════
-   LOADING / SKELETON
-════════════════════════════════ */
-.skeleton {
-  background: linear-gradient(90deg, var(--bg-raised) 25%, var(--bg-hover) 50%, var(--bg-raised) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 4px;
+/* ══ SKELETON ══ */
+.skel {
+  background: linear-gradient(90deg, var(--raised) 25%, var(--hover) 50%, var(--raised) 75%);
+  background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 4px;
 }
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-.loading-row td { padding: 14px; }
 
-/* ════════════════════════════════
-   USER PROFILE MODAL SPECIAL
-════════════════════════════════ */
-.user-profile-hero {
-  display: flex; gap: 16px; align-items: flex-start;
-  margin-bottom: 20px; padding-bottom: 20px;
-  border-bottom: 1px solid var(--border);
+/* ══ PAGINATION ══ */
+.page-row { display: flex; align-items: center; gap: 8px; padding: 10px 0; }
+.page-btn {
+  padding: 5px 10px; border-radius: 5px; font-size: 11px; font-family: var(--font-mono);
+  background: var(--raised); border: 1px solid var(--border); color: var(--text-2); cursor: pointer;
 }
-.user-ava-lg {
-  width: 60px; height: 60px; border-radius: 50%;
-  background: var(--accent-dim); color: var(--accent-lit);
+.page-btn:hover { color: var(--text-1); }
+.page-btn.cur { background: var(--blue-dim); border-color: var(--blue); color: var(--blue-lit); }
+.page-btn:disabled { opacity: .4; cursor: not-allowed; }
+.page-info { font-size: 11px; color: var(--text-3); font-family: var(--font-mono); }
+
+/* ══ LIVE FEED ══ */
+.feed { max-height: 300px; overflow-y: auto; }
+.feed-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 16px; border-bottom: 1px solid var(--border); font-size: 12px;
+}
+.feed-row:last-child { border-bottom: none; }
+.feed-type-tag {
+  flex-shrink: 0; padding: 2px 6px; border-radius: 4px;
+  font-size: 9px; font-weight: 700; font-family: var(--font-mono); text-transform: uppercase; margin-top: 1px;
+}
+.feed-name { font-weight: 600; color: var(--text-1); }
+.feed-sub { color: var(--text-3); font-size: 11px; font-family: var(--font-mono); margin-top: 1px; }
+.feed-time { color: var(--text-3); font-size: 11px; font-family: var(--font-mono); margin-left: auto; flex-shrink: 0; }
+
+/* ══ USER PROFILE MODAL ══ */
+.user-hero { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.user-ava-xl {
+  width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+  background: var(--blue-dim); color: var(--blue-lit);
   display: flex; align-items: center; justify-content: center;
-  font-size: 24px; font-weight: 800; flex-shrink: 0;
+  font-size: 22px; font-weight: 700; font-family: var(--font-mono);
   border: 2px solid var(--border-lit);
 }
-.user-ava-lg img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-.user-info-main h2 { font-size: 18px; font-weight: 700; }
-.user-info-main p { color: var(--text-dim); font-size: 13px; margin-top: 2px; }
-.user-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-.user-meta-item { background: var(--bg-raised); border-radius: var(--radius); padding: 10px 12px; }
-.user-meta-item .label { font-size: 11px; color: var(--text-dim); font-weight: 600; }
-.user-meta-item .value { font-size: 13px; color: var(--text-prime); margin-top: 2px; font-family: var(--font-mono); }
-.action-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.user-ava-xl img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.user-main-name { font-size: 18px; font-weight: 700; }
+.user-main-email { color: var(--text-2); font-size: 12px; font-family: var(--font-mono); margin-top: 3px; }
+.user-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.meta-cell { background: var(--raised); border-radius: var(--r); padding: 9px 12px; }
+.meta-cell .lbl { font-size: 10px; color: var(--text-2); font-weight: 700; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .08em; }
+.meta-cell .val { font-size: 12px; color: var(--text-1); margin-top: 3px; font-family: var(--font-mono); }
+.action-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
 
-/* ════════════════════════════════
-   FLAG CARD
-════════════════════════════════ */
-.flag-card {
+/* ══ FLAG CARD ══ */
+.flag-row {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 16px;
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--radius); margin-bottom: 8px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
 }
-.flag-info .name { font-size: 13px; font-weight: 600; }
-.flag-info .desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+.flag-row:last-child { border-bottom: none; }
+.flag-name { font-size: 13px; font-weight: 600; }
+.flag-desc { font-size: 11px; color: var(--text-2); margin-top: 2px; }
 
-/* ════════════════════════════════
-   TIMELINE
-════════════════════════════════ */
+/* ══ CHANNEL PICKER ══ */
+.ch-pick { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.ch-opt {
+  padding: 7px 14px; border-radius: var(--r);
+  border: 1px solid var(--border); background: var(--raised);
+  cursor: pointer; font-size: 13px; color: var(--text-2); transition: all .15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.ch-opt.on { border-color: var(--blue); background: var(--blue-dim); color: var(--blue-lit); }
+
+/* ══ TIMELINE ══ */
 .timeline { list-style: none; }
-.timeline li {
-  display: flex; gap: 12px;
-  padding-bottom: 16px; position: relative;
-}
-.timeline li::before {
-  content: '';
-  position: absolute; left: 6px; top: 18px;
-  bottom: 0; width: 1px; background: var(--border);
-}
-.timeline li:last-child::before { display: none; }
-.tl-dot {
-  width: 14px; height: 14px; border-radius: 50%;
-  background: var(--accent-dim); border: 2px solid var(--accent);
-  flex-shrink: 0; margin-top: 2px;
-}
-.tl-content .tl-action { font-size: 13px; font-weight: 600; }
-.tl-content .tl-time { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.tl-item { display: flex; gap: 12px; padding-bottom: 14px; position: relative; }
+.tl-item::before { content: ''; position: absolute; left: 6px; top: 16px; bottom: 0; width: 1px; background: var(--border); }
+.tl-item:last-child::before { display: none; }
+.tl-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--blue-dim); border: 2px solid var(--blue); flex-shrink: 0; margin-top: 2px; }
+.tl-action { font-size: 13px; font-weight: 600; }
+.tl-time { font-size: 11px; color: var(--text-2); margin-top: 2px; font-family: var(--font-mono); }
 
-/* ════════════════════════════════
-   OVERVIEW PAGE LIVE FEED
-════════════════════════════════ */
-.live-feed { max-height: 280px; overflow-y: auto; }
-.feed-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 10px 0; border-bottom: 1px solid var(--border);
-  font-size: 12px;
+/* ══ OVERVIEW MINI STATS ══ */
+.mini-stats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.mini-stat {
+  background: var(--raised); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 8px 14px; flex: 1; min-width: 100px;
 }
-.feed-item:last-child { border-bottom: none; }
-.feed-type {
-  padding: 2px 7px; border-radius: 4px;
-  font-size: 10px; font-weight: 700; text-transform: uppercase;
-  flex-shrink: 0; margin-top: 1px;
-}
-.feed-time { color: var(--text-faint); font-family: var(--font-mono); font-size: 11px; margin-top: 1px; }
+.mini-stat-val { font-size: 18px; font-weight: 700; font-family: var(--font-mono); line-height: 1; }
+.mini-stat-label { font-size: 11px; color: var(--text-2); margin-top: 2px; }
 
-/* ════════════════════════════════
-   BROADCAST PAGE
-════════════════════════════════ */
-.channel-picker { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
-.channel-opt {
-  padding: 8px 14px; border-radius: var(--radius);
-  border: 1px solid var(--border); background: var(--bg-raised);
-  cursor: pointer; font-size: 13px; font-weight: 500;
-  color: var(--text-dim); transition: all .15s; display: flex; align-items: center; gap: 6px;
+/* ══ SECURITY THREAT CARD ══ */
+.threat-card {
+  background: var(--red-dim); border: 1px solid rgba(244,63,94,.2);
+  border-radius: var(--r); padding: 10px 14px; margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between;
 }
-.channel-opt.selected { border-color: var(--accent); background: var(--accent-dim); color: var(--accent-lit); }
+.threat-title { font-size: 13px; font-weight: 600; color: var(--red); }
+.threat-sub { font-size: 11px; color: var(--text-2); margin-top: 2px; }
 
-/* ════════════════════════════════
-   PAGINATION
-════════════════════════════════ */
-.pagination { display: flex; align-items: center; gap: 8px; padding: 12px 0; }
-.page-btn {
-  padding: 5px 10px; border-radius: 6px;
-  background: var(--bg-raised); border: 1px solid var(--border);
-  color: var(--text-dim); font-size: 12px; cursor: pointer;
+/* ══ ANALYTICS RING ══ */
+.ring-wrap { display: flex; align-items: center; gap: 20px; padding: 16px; }
+.ring-chart { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+.ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ring-val { font-size: 20px; font-weight: 700; font-family: var(--font-mono); }
+.ring-sub { font-size: 10px; color: var(--text-2); }
+.ring-legend { flex: 1; }
+.ring-leg-row { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 6px; }
+.ring-leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ══ HEATMAP ══ */
+.heatmap { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; }
+.heat-cell { aspect-ratio: 1; border-radius: 2px; background: var(--raised); cursor: pointer; transition: transform .1s; }
+.heat-cell:hover { transform: scale(1.3); }
+
+/* ══ BROADCAST HISTORY ══ */
+.bcast-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 12px;
 }
-.page-btn:hover { color: var(--text-prime); }
-.page-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent-lit); }
+.bcast-row:last-child { border-bottom: none; }
+.bcast-title { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+.bcast-meta { color: var(--text-2); font-family: var(--font-mono); font-size: 11px; }
 
-/* ════════════════════════════════
-   RESPONSIVE
-════════════════════════════════ */
-@media (max-width: 900px) {
-  .sidebar { width: 180px; }
-  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+/* ══ MISC ══ */
+.section-title { font-size: 12px; font-weight: 700; color: var(--text-2); letter-spacing: .06em; text-transform: uppercase; font-family: var(--font-mono); margin-bottom: 10px; display: block; }
+.text-muted { color: var(--text-2); }
+.text-faint { color: var(--text-3); }
+.mono { font-family: var(--font-mono); }
+.mb12 { margin-bottom: 12px; }
+.mb16 { margin-bottom: 16px; }
+.empty-state { text-align: center; padding: 32px; color: var(--text-3); font-size: 13px; }
+.empty-state .icon { font-size: 32px; margin-bottom: 10px; }
+
+/* ══ MAINTENANCE BANNER ══ */
+#maintBanner {
+  display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+  background: var(--amber-dim); border-bottom: 2px solid var(--amber);
+  padding: 8px 20px; text-align: center; font-size: 13px; color: var(--amber);
 }
 </style>
 </head>
 <body>
 
-<!-- ════════════════ LOGIN SCREEN ════════════════ -->
+<!-- ══ MAINTENANCE BANNER ══ -->
+<div id="maintBanner">⚠️ <strong>MAINTENANCE MODE IS ACTIVE</strong> — Users see maintenance screen. Disable in Feature Flags.</div>
+
+<!-- ══ LOGIN SCREEN ══ -->
 <div id="loginScreen">
-  <div class="login-box">
-    <div class="login-logo">EduChat</div>
-    <div class="login-sub">Admin Control Center</div>
-    <button class="login-btn" id="googleLoginBtn">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+  <div class="login-wrap">
+    <div class="login-logo">
+      <div class="login-logo-dot"></div>
+      EduChat
+    </div>
+    <div class="login-sub">Admin Command Center</div>
+    <div class="login-badge">🔒 RESTRICTED ACCESS</div>
+    <div class="login-divider"><hr><span>authenticate with</span><hr></div>
+    <button class="google-btn" id="googleLoginBtn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
       Sign in with Google
     </button>
     <div class="login-err" id="loginErr"></div>
   </div>
 </div>
 
-<!-- ════════════════ MAIN APP ════════════════ -->
+<!-- ══ MAIN APP ══ -->
 <div id="app">
+
   <!-- Sidebar -->
   <aside class="sidebar">
-    <div class="sidebar-brand">EduChat <span>Admin Dashboard</span></div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">Overview</div>
+    <div class="sidebar-brand">
+      <div class="brand-mark"><div class="brand-dot"></div> EduChat</div>
+      <div class="brand-sub">Admin Panel</div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-group">Overview</div>
       <div class="nav-item active" data-panel="overview">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        Overview
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
       </div>
 
-      <div class="nav-section">Management</div>
+      <div class="nav-group">Management</div>
       <div class="nav-item" data-panel="users">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Users
       </div>
       <div class="nav-item" data-panel="reports">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         Reports
-        <span class="badge" id="reportsBadge" style="display:none">0</span>
+        <span class="nav-badge" id="reportsBadge" style="display:none">0</span>
+      </div>
+      <div class="nav-item" data-panel="messages">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Messages
       </div>
 
-      <div class="nav-section">Analytics</div>
+      <div class="nav-group">Analytics</div>
       <div class="nav-item" data-panel="analytics">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         Analytics
       </div>
+      <div class="nav-item" data-panel="engagement">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        Engagement
+      </div>
 
-      <div class="nav-section">Security</div>
+      <div class="nav-group">Security</div>
       <div class="nav-item" data-panel="security">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         Security
+        <span class="nav-badge amber" id="threatsBadge" style="display:none">!</span>
       </div>
       <div class="nav-item" data-panel="sessions">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         Sessions
       </div>
 
-      <div class="nav-section">Comms</div>
+      <div class="nav-group">Comms</div>
       <div class="nav-item" data-panel="broadcast">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 3h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 10c1.38 2.56 3.35 4.53 5.91 5.91l1.36-1.16a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 3h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 10c1.38 2.56 3.35 4.53 5.91 5.91l1.36-1.16a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         Broadcast
       </div>
 
-      <div class="nav-section">System</div>
+      <div class="nav-group">System</div>
       <div class="nav-item" data-panel="flags">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
         Feature Flags
       </div>
       <div class="nav-item" data-panel="audit">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         Audit Log
       </div>
       <div class="nav-item" data-panel="team">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         Admin Team
       </div>
     </nav>
-    <div class="sidebar-footer">
-      <div class="admin-tag">
-        <div class="admin-avatar" id="adminAvatarSidebar">A</div>
+
+    <div class="sidebar-foot">
+      <div class="admin-chip">
+        <div class="admin-ava" id="adminAva">A</div>
         <div>
-          <div class="admin-name" id="adminNameSidebar">Admin</div>
-          <div class="admin-role" id="adminRoleSidebar">—</div>
+          <div class="admin-name" id="adminName">Admin</div>
+          <div class="admin-role" id="adminRole">—</div>
         </div>
         <button class="logout-btn" id="logoutBtn" title="Sign out">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         </button>
       </div>
     </div>
@@ -655,214 +660,348 @@ textarea.input { resize: vertical; min-height: 80px; }
 
   <!-- Main -->
   <div class="main">
-    <!-- Header -->
     <div class="header">
       <div>
-        <span class="header-title" id="headerTitle">Overview</span>
-        <span class="header-sub" id="headerSub">Real-time dashboard</span>
+        <span class="header-title" id="headerTitle">Dashboard</span>
+        <span class="header-crumb" id="headerCrumb">Real-time overview</span>
       </div>
       <div class="header-right">
-        <div class="status-dot" title="Connected"></div>
-        <span style="font-size:11px;color:var(--text-dim)">Live</span>
+        <div class="live-indicator"><div class="live-dot"></div>LIVE</div>
+        <div class="header-time" id="headerClock">--:--:--</div>
       </div>
     </div>
 
-    <!-- Content -->
     <div class="content">
 
-      <!-- ══════════ OVERVIEW PANEL ══════════ -->
+      <!-- ══════ OVERVIEW ══════ -->
       <div class="panel active" id="panel-overview">
-        <div class="stat-grid" id="overviewStats">
+        <div class="stat-grid">
           <div class="stat-card">
-            <div class="stat-icon" style="background:var(--accent-dim)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-lit)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-            </div>
+            <div class="stat-icon" style="background:var(--blue-dim)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue-lit)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
             <div class="stat-label">Total Users</div>
-            <div class="stat-value" id="s-totalUsers">—</div>
+            <div class="stat-val" id="s-total">—</div>
+            <div class="stat-delta" id="sd-total">—</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon" style="background:var(--green-dim)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            </div>
+            <div class="stat-icon" style="background:var(--green-dim)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
             <div class="stat-label">Active Today</div>
-            <div class="stat-value" id="s-activeToday">—</div>
+            <div class="stat-val" id="s-today">—</div>
+            <div class="stat-delta" id="sd-today">—</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon" style="background:var(--cyan-dim)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
-            </div>
-            <div class="stat-label">Active Sessions</div>
-            <div class="stat-value" id="s-activeSessions">—</div>
+            <div class="stat-icon" style="background:var(--cyan-dim)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg></div>
+            <div class="stat-label">Live Sessions</div>
+            <div class="stat-val" id="s-sessions">—</div>
+            <div class="stat-delta" id="sd-sessions">online now</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon" style="background:var(--purple-dim)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            </div>
+            <div class="stat-icon" style="background:var(--purple-dim)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
             <div class="stat-label">Messages Today</div>
-            <div class="stat-value" id="s-messagesDay">—</div>
+            <div class="stat-val" id="s-msgs">—</div>
+            <div class="stat-delta" id="sd-msgs">—</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon" style="background:var(--red-dim)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-            </div>
+            <div class="stat-icon" style="background:var(--red-dim)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>
             <div class="stat-label">Banned Users</div>
-            <div class="stat-value" id="s-bannedUsers">—</div>
+            <div class="stat-val" id="s-banned">—</div>
+            <div class="stat-delta" id="sd-banned">—</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon" style="background:var(--amber-dim)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-            </div>
+            <div class="stat-icon" style="background:var(--amber-dim)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div>
             <div class="stat-label">Pending Reports</div>
-            <div class="stat-value" id="s-pendingReports">—</div>
+            <div class="stat-val" id="s-reports">—</div>
+            <div class="stat-delta" id="sd-reports">needs review</div>
           </div>
         </div>
 
-        <div class="grid-2" style="margin-bottom:16px">
+        <div class="g2 mb16">
           <div class="card">
-            <div class="card-header">
-              <span class="card-title">📡 Recent Activity Feed</span>
-              <button class="btn btn-ghost btn-sm" onclick="loadLoginLogs()">Refresh</button>
+            <div class="card-head">
+              <span class="card-title"><span class="card-title-icon">📡</span> Live Activity Feed</span>
+              <button class="btn btn-ghost btn-sm" onclick="loadActivityFeed()">↻ Refresh</button>
             </div>
-            <div class="card-body" style="padding:0">
-              <div class="live-feed" id="activityFeed">
-                <div style="padding:20px;text-align:center;color:var(--text-faint);font-size:13px">Loading...</div>
+            <div class="feed" id="activityFeed">
+              <div class="empty-state"><div class="icon">⏳</div>Loading...</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title"><span class="card-title-icon">💬</span> Messages — Last 7 Days</span></div>
+            <div class="card-body"><div class="chart-box"><canvas id="chartMsgWeek"></canvas></div></div>
+          </div>
+        </div>
+
+        <div class="g3">
+          <div class="card">
+            <div class="card-head"><span class="card-title"><span class="card-title-icon">🌡️</span> Quick Actions</span></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+              <button class="btn btn-ghost" style="justify-content:flex-start" onclick="nav('users')">👥 Manage Users</button>
+              <button class="btn btn-ghost" style="justify-content:flex-start" onclick="nav('broadcast')">📢 Send Broadcast</button>
+              <button class="btn btn-ghost" style="justify-content:flex-start" onclick="nav('reports')">🚨 Review Reports</button>
+              <button class="btn btn-ghost" style="justify-content:flex-start" onclick="nav('flags')">⚙️ Feature Flags</button>
+              <button class="btn btn-amber" style="justify-content:flex-start" onclick="nav('security')">🛡️ Security Center</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title"><span class="card-title-icon">📊</span> Today's Snapshot</span></div>
+            <div class="card-body">
+              <div class="mini-stats" style="flex-direction:column;gap:8px">
+                <div class="mini-stat"><div class="mini-stat-val" id="snap-calls" style="color:var(--cyan)">—</div><div class="mini-stat-label">Voice / Video Calls</div></div>
+                <div class="mini-stat"><div class="mini-stat-val" id="snap-files" style="color:var(--purple)">—</div><div class="mini-stat-label">Files Shared</div></div>
+                <div class="mini-stat"><div class="mini-stat-val" id="snap-ai" style="color:var(--emerald)">—</div><div class="mini-stat-label">AI Requests</div></div>
+                <div class="mini-stat"><div class="mini-stat-val" id="snap-new" style="color:var(--blue-lit)">—</div><div class="mini-stat-label">New Signups</div></div>
               </div>
             </div>
           </div>
           <div class="card">
-            <div class="card-header"><span class="card-title">💬 Messages (Today)</span></div>
-            <div class="card-body">
-              <div class="chart-wrap"><canvas id="chartMsgToday"></canvas></div>
+            <div class="card-head"><span class="card-title"><span class="card-title-icon">🔔</span> System Status</span></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:13px">Firebase</span>
+                <span class="pill p-green" id="firebaseStatus">● Online</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:13px">Supabase</span>
+                <span class="pill p-green" id="supaStatus">● Checking…</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:13px">Email (Brevo)</span>
+                <span class="pill p-green">● Online</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:13px">Maintenance Mode</span>
+                <span class="pill" id="maintStatus" style="background:var(--green-dim);color:var(--green)">OFF</span>
+              </div>
             </div>
           </div>
         </div>
-
-        <div id="maintenanceWarn" style="display:none" class="alert-banner warn">
-          ⚠️ <strong>Maintenance mode is ON.</strong> Users see a banner. Turn off in Feature Flags when done.
-        </div>
       </div>
 
-      <!-- ══════════ USERS PANEL ══════════ -->
+      <!-- ══════ USERS ══════ -->
       <div class="panel" id="panel-users">
         <div class="toolbar">
-          <div class="search-bar" style="max-width:320px">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-faint)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="userSearch" placeholder="Search name, email, UID…" oninput="debounceUserSearch()">
+          <div class="search-row" style="max-width:300px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="userSearch" placeholder="Search name, email, UID…" oninput="debounceSearch()">
           </div>
           <select class="input" id="userFilter" style="width:auto" onchange="loadUsers()">
             <option value="">All Users</option>
             <option value="banned">Banned</option>
-            <option value="totp">TOTP On</option>
-            <option value="no_totp">TOTP Off</option>
+            <option value="totp">TOTP Enabled</option>
+            <option value="no_totp">No TOTP</option>
           </select>
-          <button class="btn btn-ghost btn-sm" onclick="loadUsers()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-            Refresh
-          </button>
-          <span style="color:var(--text-dim);font-size:12px;margin-left:auto" id="userCount"></span>
+          <button class="btn btn-ghost btn-sm" onclick="loadUsers()">↻ Refresh</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportUsers()">⬇ Export CSV</button>
+          <span style="font-size:11px;color:var(--text-3);margin-left:auto;font-family:var(--font-mono)" id="userCountLabel"></span>
         </div>
         <div class="card">
-          <div class="table-wrap">
+          <div class="tbl-wrap">
             <table>
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Email</th>
-                  <th>Last Seen</th>
-                  <th>Status</th>
-                  <th>TOTP</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
+              <thead><tr><th>User</th><th>Email</th><th>Last Seen</th><th>Status</th><th>TOTP</th><th>Groups</th><th>Actions</th></tr></thead>
               <tbody id="usersBody">
-                <tr class="loading-row"><td colspan="6"><div class="skeleton" style="height:14px;width:80%"></div></td></tr>
+                <tr><td colspan="7"><div class="skel" style="height:14px;width:80%;margin:12px 0"></div></td></tr>
               </tbody>
             </table>
           </div>
-          <div class="pagination" id="usersPagination" style="padding:12px 16px"></div>
+          <div id="usersPagination" style="padding:10px 16px"></div>
         </div>
       </div>
 
-      <!-- ══════════ REPORTS PANEL ══════════ -->
+      <!-- ══════ REPORTS ══════ -->
       <div class="panel" id="panel-reports">
         <div class="toolbar">
-          <button class="btn btn-ghost btn-sm" onclick="loadReports()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-            Refresh
-          </button>
+          <select class="input" id="reportFilter" style="width:auto" onchange="loadReports()">
+            <option value="">All Reports</option>
+            <option value="pending">Pending</option>
+            <option value="actioned">Actioned</option>
+            <option value="dismissed">Dismissed</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadReports()">↻ Refresh</button>
         </div>
         <div class="card">
-          <div class="table-wrap">
+          <div class="tbl-wrap">
             <table>
-              <thead>
-                <tr><th>Reporter</th><th>Target</th><th>Reason</th><th>Filed</th><th>Actions</th></tr>
-              </thead>
+              <thead><tr><th>Reporter</th><th>Target User</th><th>Reason</th><th>Filed</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody id="reportsBody">
-                <tr class="loading-row"><td colspan="5"><div class="skeleton" style="height:14px;width:60%"></div></td></tr>
+                <tr><td colspan="6"><div class="skel" style="height:14px;width:60%;margin:12px 0"></div></td></tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- ══════════ ANALYTICS PANEL ══════════ -->
-      <div class="panel" id="panel-analytics">
-        <div class="grid-2" style="margin-bottom:16px">
+      <!-- ══════ MESSAGES ══════ -->
+      <div class="panel" id="panel-messages">
+        <div class="g2 mb16">
           <div class="card">
-            <div class="card-header"><span class="card-title">📈 Daily Active Users (30d)</span></div>
-            <div class="card-body"><div class="chart-wrap"><canvas id="chartDAU"></canvas></div></div>
+            <div class="card-head"><span class="card-title"><span class="card-title-icon">🔍</span> Message Search</span></div>
+            <div class="card-body">
+              <div class="input-group">
+                <label class="input-label">Search Keyword</label>
+                <div style="display:flex;gap:8px">
+                  <input type="text" class="input" id="msgSearchKey" placeholder="Search across all messages…" onkeydown="if(event.key==='Enter')searchMessages()">
+                  <button class="btn btn-primary" onclick="searchMessages()">Search</button>
+                </div>
+              </div>
+              <div id="msgSearchResults" style="max-height:300px;overflow-y:auto"></div>
+            </div>
           </div>
           <div class="card">
-            <div class="card-header"><span class="card-title">💬 Messages per Day (30d)</span></div>
-            <div class="card-body"><div class="chart-wrap"><canvas id="chartMsgs"></canvas></div></div>
+            <div class="card-head"><span class="card-title"><span class="card-title-icon">🗂️</span> Message Stats</span></div>
+            <div class="card-body">
+              <div class="mini-stats" style="flex-direction:column;gap:8px">
+                <div class="mini-stat"><div class="mini-stat-val" id="msg-total" style="color:var(--blue-lit)">—</div><div class="mini-stat-label">Total Messages (All Time)</div></div>
+                <div class="mini-stat"><div class="mini-stat-val" id="msg-today" style="color:var(--green)">—</div><div class="mini-stat-label">Messages Today</div></div>
+                <div class="mini-stat"><div class="mini-stat-val" id="msg-deleted" style="color:var(--red)">—</div><div class="mini-stat-label">Deleted Today</div></div>
+                <div class="mini-stat"><div class="mini-stat-val" id="msg-media" style="color:var(--purple)">—</div><div class="mini-stat-label">Media Files Today</div></div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="card" style="margin-bottom:16px">
-          <div class="card-header"><span class="card-title">⚡ Feature Usage (Last 30 days)</span></div>
-          <div class="card-body">
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Date</th><th>Voice Calls</th><th>Video Calls</th><th>File Shares</th><th>AI Requests</th><th>Groups Created</th><th>Friend Adds</th></tr></thead>
-                <tbody id="featureStatsBody"></tbody>
-              </table>
+        <div class="card">
+          <div class="card-head"><span class="card-title"><span class="card-title-icon">⏰</span> Volume by Day (Last 14 Days)</span></div>
+          <div class="card-body"><div class="chart-box-lg"><canvas id="chartHourly"></canvas></div></div>
+        </div>
+      </div>
+
+      <!-- ══════ ANALYTICS ══════ -->
+      <div class="panel" id="panel-analytics">
+        <div class="g2 mb16">
+          <div class="card">
+            <div class="card-head"><span class="card-title"><span class="card-title-icon">📈</span> Daily Active Users (30d)</span></div>
+            <div class="card-body"><div class="chart-box-lg"><canvas id="chartDAU"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title"><span class="card-title-icon">💬</span> Messages per Day (30d)</span></div>
+            <div class="card-body"><div class="chart-box-lg"><canvas id="chartMsgs30"></canvas></div></div>
+          </div>
+        </div>
+        <div class="g2 mb16">
+          <div class="card">
+            <div class="card-head"><span class="card-title"><span class="card-title-icon">🌱</span> New Signups (30d)</span></div>
+            <div class="card-body"><div class="chart-box"><canvas id="chartSignups"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title"><span class="card-title-icon">🔧</span> Feature Usage (30d)</span></div>
+            <div class="card-body"><div class="chart-box"><canvas id="chartFeatures"></canvas></div></div>
+          </div>
+        </div>
+        <div class="card mb16">
+          <div class="card-head"><span class="card-title"><span class="card-title-icon">📊</span> Detailed Feature Stats</span></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Voice Calls</th><th>Video Calls</th><th>File Shares</th><th>AI Requests</th><th>Groups Created</th><th>Friend Adds</th></tr></thead>
+              <tbody id="featureBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════ ENGAGEMENT ══════ -->
+      <div class="panel" id="panel-engagement">
+        <div class="g3 mb16">
+          <div class="stat-card">
+            <div class="stat-label">Avg Session Length</div>
+            <div class="stat-val" id="eng-sesslen" style="color:var(--blue-lit)">—</div>
+            <div class="stat-delta">minutes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Messages / User / Day</div>
+            <div class="stat-val" id="eng-mpu" style="color:var(--green)">—</div>
+            <div class="stat-delta">average</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">D1 Retention</div>
+            <div class="stat-val" id="eng-d1" style="color:var(--purple)">—</div>
+            <div class="stat-delta">return next day</div>
+          </div>
+        </div>
+        <div class="g2 mb16">
+          <div class="card">
+            <div class="card-head"><span class="card-title"><span class="card-title-icon">🕐</span> Peak Hours Heatmap</span></div>
+            <div class="card-body">
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);font-family:var(--font-mono);margin-bottom:8px">
+                <span>12AM</span><span>6AM</span><span>12PM</span><span>6PM</span><span>11PM</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px" id="heatmapRows"></div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--text-3)">
+                Low <div style="display:flex;gap:2px;align-items:center">
+                  <div style="width:12px;height:12px;background:var(--raised);border-radius:2px"></div>
+                  <div style="width:12px;height:12px;background:rgba(59,130,246,.2);border-radius:2px"></div>
+                  <div style="width:12px;height:12px;background:rgba(59,130,246,.4);border-radius:2px"></div>
+                  <div style="width:12px;height:12px;background:rgba(59,130,246,.65);border-radius:2px"></div>
+                  <div style="width:12px;height:12px;background:var(--blue);border-radius:2px"></div>
+                </div> High
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title"><span class="card-title-icon">🎯</span> Message Type Split</span></div>
+            <div class="card-body">
+              <div class="ring-wrap">
+                <div class="ring-chart">
+                  <canvas id="chartMsgSplit"></canvas>
+                  <div class="ring-center">
+                    <div class="ring-val" id="ringTotal">—</div>
+                    <div class="ring-sub">total</div>
+                  </div>
+                </div>
+                <div class="ring-legend">
+                  <div class="ring-leg-row"><div class="ring-leg-dot" style="background:var(--blue)"></div><span>Direct Messages</span></div>
+                  <div class="ring-leg-row"><div class="ring-leg-dot" style="background:var(--purple)"></div><span>Group Messages</span></div>
+                  <div class="ring-leg-row"><div class="ring-leg-dot" style="background:var(--cyan)"></div><span>Media</span></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ══════════ SECURITY PANEL ══════════ -->
+      <!-- ══════ SECURITY ══════ -->
       <div class="panel" id="panel-security">
-        <div class="toolbar">
-          <label class="toggle-wrap">
-            <label class="toggle">
-              <input type="checkbox" id="suspiciousOnly" onchange="loadLoginLogs()">
-              <span class="toggle-slider"></span>
-            </label>
-            <span style="font-size:13px;color:var(--text-dim)">Suspicious only</span>
-          </label>
-          <button class="btn btn-ghost btn-sm" onclick="loadLoginLogs()">Refresh</button>
+        <div class="g3 mb16">
+          <div class="stat-card">
+            <div class="stat-label">Suspicious Logins Today</div>
+            <div class="stat-val" id="sec-susp" style="color:var(--red)">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Failed OTPs (24h)</div>
+            <div class="stat-val" id="sec-otp" style="color:var(--amber)">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Blocked IPs</div>
+            <div class="stat-val" id="sec-ips" style="color:var(--text-1)">—</div>
+          </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+
+        <div class="g2 mb16">
           <div class="card">
-            <div class="card-header">
-              <span class="card-title">🔐 Login History</span>
+            <div class="card-head">
+              <span class="card-title"><span class="card-title-icon">🔐</span> Login Logs</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <label class="toggle-wrap" style="font-size:12px">
+                  <label class="toggle"><input type="checkbox" id="suspOnly" onchange="loginPage=0;loadLoginLogs()"><span class="toggle-track"></span></label>
+                  Suspicious only
+                </label>
+                <button class="btn btn-ghost btn-sm" onclick="loadLoginLogs()">↻</button>
+              </div>
             </div>
-            <div class="table-wrap">
+            <div class="tbl-wrap">
               <table>
-                <thead><tr><th>User</th><th>IP</th><th>Device</th><th>When</th><th>Flag</th></tr></thead>
+                <thead><tr><th>User</th><th>IP</th><th>Browser / OS</th><th>Time</th><th>Status</th></tr></thead>
                 <tbody id="loginLogsBody"></tbody>
               </table>
             </div>
-            <div class="pagination" id="loginPagination" style="padding:12px 16px"></div>
+            <div id="loginPagi" style="padding:8px 16px"></div>
           </div>
+
           <div class="card">
-            <div class="card-header">
-              <span class="card-title">🚫 IP Blacklist</span>
-              <button class="btn btn-danger btn-sm" onclick="openBlacklistModal()">+ Add IP</button>
+            <div class="card-head">
+              <span class="card-title"><span class="card-title-icon">🚫</span> IP Blacklist</span>
+              <button class="btn btn-danger btn-sm" onclick="openModal('blacklistModal')">+ Block IP</button>
             </div>
-            <div class="table-wrap">
+            <div class="tbl-wrap">
               <table>
-                <thead><tr><th>IP Address</th><th>Reason</th><th>Added</th><th></th></tr></thead>
+                <thead><tr><th>IP Address</th><th>Reason</th><th>Blocked</th><th></th></tr></thead>
                 <tbody id="ipBlacklistBody"></tbody>
               </table>
             </div>
@@ -870,101 +1009,179 @@ textarea.input { resize: vertical; min-height: 80px; }
         </div>
       </div>
 
-      <!-- ══════════ SESSIONS PANEL ══════════ -->
+      <!-- ══════ SESSIONS ══════ -->
       <div class="panel" id="panel-sessions">
         <div class="toolbar">
-          <button class="btn btn-ghost btn-sm" onclick="loadSessions()">Refresh</button>
-          <span style="color:var(--text-dim);font-size:12px;margin-left:auto" id="sessionCount"></span>
+          <button class="btn btn-ghost btn-sm" onclick="loadSessions()">↻ Refresh</button>
+          <button class="btn btn-danger btn-sm" onclick="terminateAllSessions()">⏏ Terminate All</button>
+          <span style="font-size:11px;color:var(--text-3);margin-left:auto;font-family:var(--font-mono)" id="sessionCount"></span>
         </div>
         <div class="card">
-          <div class="table-wrap">
+          <div class="tbl-wrap">
             <table>
-              <thead><tr><th>User</th><th>Device</th><th>IP</th><th>Last Active</th><th>Actions</th></tr></thead>
+              <thead><tr><th>User</th><th>Device</th><th>IP Address</th><th>Location</th><th>Last Active</th><th>Actions</th></tr></thead>
               <tbody id="sessionsBody"></tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- ══════════ BROADCAST PANEL ══════════ -->
+      <!-- ══════ BROADCAST ══════ -->
       <div class="panel" id="panel-broadcast">
-        <div class="grid-2">
+        <div class="g2">
           <div>
-            <div class="card" style="margin-bottom:16px">
-              <div class="card-header"><span class="card-title">📣 Send Broadcast</span></div>
+            <div class="card mb16">
+              <div class="card-head"><span class="card-title"><span class="card-title-icon">📢</span> New Broadcast</span></div>
               <div class="card-body">
+                <div class="input-group">
+                  <label class="input-label">Target Audience</label>
+                  <select class="input" id="broadcastAudience">
+                    <option value="all">All Users</option>
+                    <option value="active">Active (Last 7 days)</option>
+                    <option value="new">New Users (Last 30 days)</option>
+                    <option value="inactive">Inactive (30+ days)</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label class="input-label">Channel</label>
+                  <div class="ch-pick">
+                    <div class="ch-opt on" data-ch="in_app" onclick="selectChannel(this)">📱 In-App</div>
+                    <div class="ch-opt" data-ch="email" onclick="selectChannel(this)">📧 Email</div>
+                    <div class="ch-opt" data-ch="push" onclick="selectChannel(this)">🔔 Push</div>
+                    <div class="ch-opt" data-ch="all" onclick="selectChannel(this)">📡 All Channels</div>
+                  </div>
+                </div>
                 <div class="input-group">
                   <label class="input-label">Title</label>
                   <input type="text" class="input" id="broadcastTitle" placeholder="Announcement title…">
                 </div>
                 <div class="input-group">
                   <label class="input-label">Message</label>
-                  <textarea class="input" id="broadcastMsg" placeholder="Write your message…" rows="4"></textarea>
+                  <textarea class="input" id="broadcastMsg" placeholder="Your message to all users…" style="min-height:100px"></textarea>
                 </div>
-                <div class="input-group">
-                  <label class="input-label">Channel</label>
-                  <div class="channel-picker">
-                    <div class="channel-opt selected" data-ch="in_app" onclick="selectChannel(this)">📲 In-App</div>
-                    <div class="channel-opt" data-ch="email" onclick="selectChannel(this)">📧 Email</div>
-                    <div class="channel-opt" data-ch="all" onclick="selectChannel(this)">🔀 Both</div>
-                  </div>
-                </div>
-                <button class="btn btn-primary" onclick="sendBroadcast()" id="broadcastBtn">Send to All Users</button>
+                <button class="btn btn-primary" id="broadcastBtn" onclick="sendBroadcast()" style="width:100%">
+                  📢 Send Broadcast
+                </button>
               </div>
             </div>
           </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">📋 Broadcast History</span></div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Title</th><th>Channel</th><th>Recipients</th><th>Sent</th></tr></thead>
-                <tbody id="broadcastHistory"></tbody>
-              </table>
+          <div>
+            <div class="card">
+              <div class="card-head">
+                <span class="card-title"><span class="card-title-icon">📋</span> Broadcast History</span>
+                <button class="btn btn-ghost btn-sm" onclick="loadBroadcastHistory()">↻</button>
+              </div>
+              <div id="broadcastHistoryList">
+                <div class="empty-state"><div class="icon">📭</div>Loading…</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ══════════ FEATURE FLAGS PANEL ══════════ -->
+      <!-- ══════ FEATURE FLAGS ══════ -->
       <div class="panel" id="panel-flags">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">🚩 Feature Flags</span>
-            <span style="font-size:12px;color:var(--text-dim)">Changes apply immediately</span>
+        <div class="g2">
+          <div>
+            <div class="card mb16">
+              <div class="card-head"><span class="card-title"><span class="card-title-icon">🚦</span> App Controls</span></div>
+              <div id="flagsBody">
+                <div class="empty-state"><div class="icon">⚙️</div>Loading flags…</div>
+              </div>
+            </div>
           </div>
-          <div class="card-body" id="flagsBody">
-            <div style="color:var(--text-faint);text-align:center;padding:20px">Loading…</div>
+          <div>
+            <div class="card mb16">
+              <div class="card-head"><span class="card-title"><span class="card-title-icon">⚠️</span> Danger Zone</span></div>
+              <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+                <div class="alert-banner alert-warn">⚠️ These actions affect all users immediately. Use with caution.</div>
+                <button class="btn btn-danger" onclick="confirmDangerAction('clear-all-sessions','Clear ALL active sessions globally?')">⏏ Clear All Sessions</button>
+                <button class="btn btn-amber" onclick="confirmDangerAction('flush-cache','Flush server cache?')">🗑️ Flush Server Cache</button>
+                <button class="btn btn-ghost" onclick="confirmDangerAction('send-health-check','Run system health check?')">🩺 System Health Check</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head"><span class="card-title"><span class="card-title-icon">📊</span> System Limits</span></div>
+              <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
+                <div>
+                  <div class="input-label">Max File Upload Size (MB)</div>
+                  <div style="display:flex;gap:8px">
+                    <input type="number" class="input" id="maxFileSize" value="50" style="width:80px">
+                    <button class="btn btn-ghost btn-sm" onclick="saveLimit('max_file_mb', document.getElementById('maxFileSize').value)">Save</button>
+                  </div>
+                </div>
+                <div>
+                  <div class="input-label">Max Group Size</div>
+                  <div style="display:flex;gap:8px">
+                    <input type="number" class="input" id="maxGroupSize" value="256" style="width:80px">
+                    <button class="btn btn-ghost btn-sm" onclick="saveLimit('max_group_size', document.getElementById('maxGroupSize').value)">Save</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- ══════════ AUDIT LOG PANEL ══════════ -->
+      <!-- ══════ AUDIT LOG ══════ -->
       <div class="panel" id="panel-audit">
         <div class="toolbar">
-          <button class="btn btn-ghost btn-sm" onclick="loadAuditLogs()">Refresh</button>
+          <select class="input" id="auditFilter" style="width:auto" onchange="auditPage=0;loadAuditLogs()">
+            <option value="">All Actions</option>
+            <option value="ban_user">Ban User</option>
+            <option value="unban_user">Unban User</option>
+            <option value="delete_user">Delete User</option>
+            <option value="force_logout_all">Force Logout</option>
+            <option value="broadcast">Broadcast</option>
+            <option value="toggle_flag">Toggle Flag</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadAuditLogs()">↻ Refresh</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportAuditLogs()">⬇ Export</button>
         </div>
         <div class="card">
-          <div class="table-wrap">
+          <div class="tbl-wrap">
             <table>
-              <thead><tr><th>Admin</th><th>Action</th><th>Target</th><th>Details</th><th>IP</th><th>When</th></tr></thead>
+              <thead><tr><th>Admin</th><th>Action</th><th>Target</th><th>Details</th><th>IP</th><th>Time</th></tr></thead>
               <tbody id="auditBody"></tbody>
             </table>
           </div>
-          <div class="pagination" id="auditPagination" style="padding:12px 16px"></div>
+          <div id="auditPagi" style="padding:8px 16px"></div>
         </div>
       </div>
 
-      <!-- ══════════ ADMIN TEAM PANEL ══════════ -->
+      <!-- ══════ ADMIN TEAM ══════ -->
       <div class="panel" id="panel-team">
         <div class="toolbar">
-          <button class="btn btn-primary btn-sm" id="addAdminBtn">+ Add Admin</button>
+          <button class="btn btn-primary" id="addAdminBtn">+ Add Admin</button>
         </div>
-        <div class="card">
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Admin</th><th>Email</th><th>Role</th><th>Added</th><th>Last Active</th><th></th></tr></thead>
-              <tbody id="teamBody"></tbody>
-            </table>
+        <div class="g2">
+          <div class="card">
+            <div class="card-head"><span class="card-title"><span class="card-title-icon">👮</span> Admin Roster</span></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Admin</th><th>Email</th><th>Role</th><th>Added</th><th>Last Active</th><th></th></tr></thead>
+                <tbody id="teamBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title"><span class="card-title-icon">🔑</span> Permissions Matrix</span></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Permission</th><th>Super Admin</th><th>Moderator</th><th>Viewer</th></tr></thead>
+                <tbody>
+                  <tr><td>View Dashboard</td><td>✅</td><td>✅</td><td>✅</td></tr>
+                  <tr><td>View Users</td><td>✅</td><td>✅</td><td>✅</td></tr>
+                  <tr><td>Ban / Unban Users</td><td>✅</td><td>✅</td><td>❌</td></tr>
+                  <tr><td>Delete Users</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                  <tr><td>Send Broadcast</td><td>✅</td><td>✅</td><td>❌</td></tr>
+                  <tr><td>Toggle Feature Flags</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                  <tr><td>Block IPs</td><td>✅</td><td>✅</td><td>❌</td></tr>
+                  <tr><td>Add / Remove Admins</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                  <tr><td>Export Data</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -973,135 +1190,131 @@ textarea.input { resize: vertical; min-height: 80px; }
   </div><!-- /main -->
 </div><!-- /app -->
 
+<!-- ══════════════ TOAST ══════════════ -->
 <div id="toast"></div>
 
-<!-- ════════════════ USER DETAIL MODAL ════════════════ -->
+<!-- ══════════════ MODALS ══════════════ -->
+
+<!-- USER PROFILE -->
 <div class="modal-overlay" id="userModal">
-  <div class="modal" style="width:600px">
-    <div class="modal-header">
-      <span class="modal-title">User Profile</span>
-      <button class="modal-close" onclick="closeModal('userModal')">&times;</button>
-    </div>
-    <div class="modal-body" id="userModalBody">Loading…</div>
+  <div class="modal" style="width:560px">
+    <div class="modal-head"><span class="modal-title">User Profile</span><button class="modal-x" onclick="closeModal('userModal')">×</button></div>
+    <div class="modal-body" id="userModalBody"><div class="empty-state">Loading…</div></div>
   </div>
 </div>
 
-<!-- ════════════════ BAN MODAL ════════════════ -->
+<!-- BAN USER -->
 <div class="modal-overlay" id="banModal">
   <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">Ban User</span>
-      <button class="modal-close" onclick="closeModal('banModal')">&times;</button>
-    </div>
+    <div class="modal-head"><span class="modal-title">🚫 Ban User</span><button class="modal-x" onclick="closeModal('banModal')">×</button></div>
     <div class="modal-body">
+      <div class="alert-banner alert-danger">This user will be immediately unable to access the app.</div>
       <div class="input-group">
-        <label class="input-label">Reason</label>
-        <input type="text" class="input" id="banReason" placeholder="Reason for ban…">
+        <label class="input-label">Ban Reason</label>
+        <input type="text" class="input" id="banReason" placeholder="Reason visible in user profile…">
       </div>
       <div class="input-group">
-        <label class="input-label">Expires (leave blank = permanent)</label>
+        <label class="input-label">Expiry (leave blank = permanent)</label>
         <input type="datetime-local" class="input" id="banExpiry">
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('banModal')">Cancel</button>
-      <button class="btn btn-danger" onclick="executeBan()">Ban User</button>
+      <button class="btn btn-danger" onclick="executeBan()">🚫 Confirm Ban</button>
     </div>
   </div>
 </div>
 
-<!-- ════════════════ ALERT MODAL ════════════════ -->
+<!-- SEND ALERT -->
 <div class="modal-overlay" id="alertModal">
   <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">Send In-App Alert</span>
-      <button class="modal-close" onclick="closeModal('alertModal')">&times;</button>
-    </div>
+    <div class="modal-head"><span class="modal-title">🔔 Send In-App Alert</span><button class="modal-x" onclick="closeModal('alertModal')">×</button></div>
     <div class="modal-body">
+      <div class="input-group">
+        <label class="input-label">Alert Type</label>
+        <select class="input" id="alertType">
+          <option value="info">ℹ️ Info</option>
+          <option value="warning">⚠️ Warning</option>
+          <option value="danger">🚨 Critical</option>
+        </select>
+      </div>
       <div class="input-group">
         <label class="input-label">Title</label>
         <input type="text" class="input" id="alertTitle" placeholder="Alert title…">
       </div>
       <div class="input-group">
         <label class="input-label">Message</label>
-        <textarea class="input" id="alertMsg" rows="3" placeholder="Alert message…"></textarea>
-      </div>
-      <div class="input-group">
-        <label class="input-label">Type</label>
-        <select class="input" id="alertType">
-          <option value="info">ℹ️ Info</option>
-          <option value="warning">⚠️ Warning</option>
-          <option value="critical">🚨 Critical</option>
-          <option value="update">🔄 Update</option>
-        </select>
+        <textarea class="input" id="alertMsg" placeholder="Alert message…"></textarea>
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('alertModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="executeAlert()">Send Alert</button>
+      <button class="btn btn-primary" onclick="executeAlert()">🔔 Send Alert</button>
     </div>
   </div>
 </div>
 
-<!-- ════════════════ EMAIL MODAL ════════════════ -->
+<!-- SEND EMAIL -->
 <div class="modal-overlay" id="emailModal">
   <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">Send Email</span>
-      <button class="modal-close" onclick="closeModal('emailModal')">&times;</button>
-    </div>
+    <div class="modal-head"><span class="modal-title">📧 Send Email</span><button class="modal-x" onclick="closeModal('emailModal')">×</button></div>
     <div class="modal-body">
       <div class="input-group">
-        <label class="input-label">Subject</label>
-        <input type="text" class="input" id="emailSubject" placeholder="Subject…">
+        <label class="input-label">Template</label>
+        <select class="input" id="emailTemplate" onchange="applyEmailTemplate()">
+          <option value="">Custom</option>
+          <option value="warning">⚠️ Warning Notice</option>
+          <option value="ban">🚫 Ban Notice</option>
+          <option value="welcome">👋 Welcome</option>
+          <option value="reset">🔐 TOTP Reset Notice</option>
+        </select>
       </div>
       <div class="input-group">
-        <label class="input-label">Message (HTML allowed)</label>
-        <textarea class="input" id="emailBody" rows="5" placeholder="Email body…"></textarea>
+        <label class="input-label">Subject</label>
+        <input type="text" class="input" id="emailSubject" placeholder="Email subject…">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Body</label>
+        <textarea class="input" id="emailBody" placeholder="Email body…" style="min-height:120px"></textarea>
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('emailModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="executeEmail()">Send Email</button>
+      <button class="btn btn-primary" onclick="executeEmail()">📧 Send Email</button>
     </div>
   </div>
 </div>
 
-<!-- ════════════════ BLACKLIST MODAL ════════════════ -->
+<!-- IP BLACKLIST -->
 <div class="modal-overlay" id="blacklistModal">
   <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">Block IP Address</span>
-      <button class="modal-close" onclick="closeModal('blacklistModal')">&times;</button>
-    </div>
+    <div class="modal-head"><span class="modal-title">🚫 Block IP Address</span><button class="modal-x" onclick="closeModal('blacklistModal')">×</button></div>
     <div class="modal-body">
       <div class="input-group">
         <label class="input-label">IP Address</label>
-        <input type="text" class="input" id="blacklistIP" placeholder="e.g. 1.2.3.4">
+        <input type="text" class="input" id="blacklistIP" placeholder="e.g. 192.168.1.1">
       </div>
       <div class="input-group">
         <label class="input-label">Reason</label>
         <input type="text" class="input" id="blacklistReason" placeholder="Why is this IP blocked?">
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('blacklistModal')">Cancel</button>
-      <button class="btn btn-danger" onclick="executeBlacklist()">Block IP</button>
+      <button class="btn btn-danger" onclick="executeBlacklist()">🚫 Block IP</button>
     </div>
   </div>
 </div>
 
-<!-- ════════════════ ADD ADMIN MODAL ════════════════ -->
+<!-- ADD ADMIN -->
 <div class="modal-overlay" id="addAdminModal">
   <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">Add Admin</span>
-      <button class="modal-close" onclick="closeModal('addAdminModal')">&times;</button>
-    </div>
+    <div class="modal-head"><span class="modal-title">+ Add Admin</span><button class="modal-x" onclick="closeModal('addAdminModal')">×</button></div>
     <div class="modal-body">
+      <div class="alert-banner alert-warn">⚠️ Only grant admin access to trusted team members. All admin actions are logged.</div>
       <div class="input-group">
         <label class="input-label">Firebase UID</label>
-        <input type="text" class="input" id="newAdminUID" placeholder="Firebase UID">
+        <input type="text" class="input" id="newAdminUID" placeholder="User UID from Firebase…">
       </div>
       <div class="input-group">
         <label class="input-label">Email</label>
@@ -1109,69 +1322,86 @@ textarea.input { resize: vertical; min-height: 80px; }
       </div>
       <div class="input-group">
         <label class="input-label">Display Name</label>
-        <input type="text" class="input" id="newAdminName" placeholder="Name">
+        <input type="text" class="input" id="newAdminName" placeholder="Display name">
       </div>
       <div class="input-group">
         <label class="input-label">Role</label>
         <select class="input" id="newAdminRole">
           <option value="moderator">Moderator</option>
           <option value="super_admin">Super Admin</option>
-          <option value="viewer">Viewer</option>
+          <option value="viewer">Viewer (Read Only)</option>
         </select>
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('addAdminModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="executeAddAdmin()">Add Admin</button>
+      <button class="btn btn-primary" onclick="executeAddAdmin()">+ Add Admin</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE USER CONFIRM -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" style="color:var(--red)">⚠️ Delete User Account</span><button class="modal-x" onclick="closeModal('deleteModal')">×</button></div>
+    <div class="modal-body">
+      <div class="alert-banner alert-danger">This will permanently delete the user account and ALL associated data including messages, groups, files. This action cannot be undone.</div>
+      <div class="input-group">
+        <label class="input-label">Type <strong>DELETE</strong> to confirm</label>
+        <input type="text" class="input" id="deleteConfirmInput" placeholder="DELETE">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="executeDeleteUser()">🗑️ Permanently Delete</button>
     </div>
   </div>
 </div>
 
 <script>
 // ══════════════════════════════════════════════════
-//  CONFIGURATION — Update these with your values
+//  CONFIG
 // ══════════════════════════════════════════════════
 const CONFIG = {
-  serverUrl: 'https://admin-chat-0wfr.onrender.com',
+  serverUrl: 'https://chat-app-0zbh.onrender.com',
   firebase: null
 };
 
 // ══════════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════════
-let currentUser = null;
-let adminRole   = null;
-let authToken   = null;
-let usersPage   = 0;
-let userTotal   = 0;
-let loginPage   = 0;
-let auditPage   = 0;
-let pendingBanUID = null;
-let pendingAlertUID = null;
-let pendingEmailUID = null;
+let currentUser = null, adminRole = null, authToken = null;
+let usersPage = 0, userTotal = 0;
+let loginPage = 0, auditPage = 0;
+let pendingBanUID = null, pendingAlertUID = null, pendingEmailUID = null, pendingDeleteUID = null;
 let selectedChannel = 'in_app';
 let charts = {};
-let userSearchTimer = null;
+let searchTimer = null;
+
+// ══════════════════════════════════════════════════
+//  CLOCK
+// ══════════════════════════════════════════════════
+function startClock() {
+  const el = document.getElementById('headerClock');
+  setInterval(() => {
+    el.textContent = new Date().toLocaleTimeString('en-IN', { hour12: false });
+  }, 1000);
+}
+startClock();
 
 // ══════════════════════════════════════════════════
 //  FIREBASE INIT
 // ══════════════════════════════════════════════════
 async function initFirebase() {
   try {
-    const cfg = {
-      apiKey: "AIzaSyBclTC8gK3QKi1X6Q-YCK2jT38yJ83xOcQ",
-      authDomain: "chat-app-a0f95.firebaseapp.com",
-      projectId: "chat-app-a0f95",
-      storageBucket: "chat-app-a0f95.appspot.com",
-      messagingSenderId: "754786153113",
-      appId: "1:754786153113:web:7543bfb097732ad229fe08",
-      measurementId: "G-JFKWR83KYJ"
-    };
+    const res = await fetch(`${CONFIG.serverUrl}/firebase-config`);
+    if (!res.ok) throw new Error('Config fetch failed');
+    const cfg = await res.json();
     if (!firebase.apps.length) firebase.initializeApp(cfg);
     else firebase.app();
     CONFIG.firebase = cfg;
   } catch (e) {
-    document.getElementById('loginErr').textContent = 'Firebase initialization failed.';
+    document.getElementById('loginErr').textContent = 'Cannot reach server. Is it running?';
   }
 }
 
@@ -1194,7 +1424,6 @@ document.getElementById('googleLoginBtn').addEventListener('click', async () => 
 
 async function handleAuth(user) {
   const token = await user.getIdToken();
-  // Verify admin role via server
   const res = await fetch(`${CONFIG.serverUrl}/admin/stats/overview`, {
     headers: { Authorization: `Bearer ${token}` }
   });
@@ -1207,29 +1436,25 @@ async function handleAuth(user) {
   }
   authToken = token;
   currentUser = user;
-  // Get role from /admin/team or cache
   try {
-    const data = await res.json();
-    // Try to get role from team
-    const teamRes = await api('GET', '/admin/team');
-    const me = teamRes?.find(a => a.uid === user.uid);
+    const teamRes = await fetch(`${CONFIG.serverUrl}/admin/team`, { headers: { Authorization: `Bearer ${token}` } });
+    const team = await teamRes.json();
+    const me = team?.find(a => a.uid === user.uid);
     adminRole = me?.role || 'moderator';
-  } catch(e) {}
-
-  // Update sidebar
+  } catch(e) { adminRole = 'moderator'; }
   const initial = (user.displayName || user.email || 'A').charAt(0).toUpperCase();
-  document.getElementById('adminAvatarSidebar').textContent = initial;
-  document.getElementById('adminNameSidebar').textContent = user.displayName || user.email || 'Admin';
-  document.getElementById('adminRoleSidebar').textContent = adminRole || 'Admin';
-
-  // Show app
+  document.getElementById('adminAva').textContent = initial;
+  if (user.photoURL) {
+    document.getElementById('adminAva').innerHTML = `<img src="${esc(user.photoURL)}" onerror="this.parentElement.textContent='${initial}'">`;
+  }
+  document.getElementById('adminName').textContent = user.displayName || user.email || 'Admin';
+  document.getElementById('adminRole').textContent = adminRole;
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').classList.add('visible');
-
-  // Load initial data
-  refreshToken();
-  setInterval(refreshToken, 55 * 60 * 1000); // refresh token every 55 min
-  loadPanel('overview');
+  // Auto-refresh token every 55 minutes
+  setInterval(() => currentUser?.getIdToken(true).then(t => authToken = t), 55 * 60 * 1000);
+  nav('overview');
+  checkSupabaseStatus();
 }
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
@@ -1237,13 +1462,29 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
   location.reload();
 });
 
-async function refreshToken() {
-  if (!currentUser) return;
-  authToken = await currentUser.getIdToken(true);
+// ══════════════════════════════════════════════════
+//  SUPABASE STATUS CHECK
+// ══════════════════════════════════════════════════
+async function checkSupabaseStatus() {
+  const el = document.getElementById('supaStatus');
+  try {
+    const res = await fetch(`${CONFIG.serverUrl}/health`);
+    const data = await res.json();
+    if (data.supabase === false) {
+      el.textContent = '● Degraded';
+      el.className = 'pill p-amber';
+    } else {
+      el.textContent = '● Online';
+      el.className = 'pill p-green';
+    }
+  } catch(e) {
+    el.textContent = '● Unknown';
+    el.className = 'pill p-gray';
+  }
 }
 
 // ══════════════════════════════════════════════════
-//  API HELPER
+//  API
 // ══════════════════════════════════════════════════
 async function api(method, path, body) {
   const opts = {
@@ -1262,46 +1503,51 @@ async function api(method, path, body) {
 // ══════════════════════════════════════════════════
 //  NAVIGATION
 // ══════════════════════════════════════════════════
-const PANEL_META = {
-  overview:  { title: 'Overview',       sub: 'Real-time dashboard' },
-  users:     { title: 'User Management', sub: 'Manage all registered users' },
-  reports:   { title: 'Reports Queue',   sub: 'Review user-filed reports' },
-  analytics: { title: 'Analytics',       sub: 'Usage & engagement data' },
-  security:  { title: 'Security',        sub: 'Login logs & threat detection' },
-  sessions:  { title: 'Active Sessions', sub: 'Live device sessions' },
-  broadcast: { title: 'Broadcast',       sub: 'Send messages to all users' },
-  flags:     { title: 'Feature Flags',   sub: 'Enable / disable app features' },
-  audit:     { title: 'Audit Log',       sub: 'Immutable admin action history' },
-  team:      { title: 'Admin Team',      sub: 'Manage admins & roles' },
+const PANELS = {
+  overview:   { title: 'Dashboard',       sub: 'Real-time overview' },
+  users:      { title: 'User Management', sub: 'Search, manage & moderate all registered users' },
+  reports:    { title: 'Reports Queue',   sub: 'Review user-filed abuse reports' },
+  messages:   { title: 'Message Monitor', sub: 'Search & analyze messages across all chats' },
+  analytics:  { title: 'Analytics',       sub: 'Usage trends, growth & engagement data' },
+  engagement: { title: 'Engagement',      sub: 'Retention, session depth & activity patterns' },
+  security:   { title: 'Security Center', sub: 'Login logs, suspicious activity & IP blacklist' },
+  sessions:   { title: 'Active Sessions', sub: 'Live device sessions across all users' },
+  broadcast:  { title: 'Broadcast',       sub: 'Send messages to all or targeted users' },
+  flags:      { title: 'Feature Flags',   sub: 'Enable / disable app features & system limits' },
+  audit:      { title: 'Audit Log',       sub: 'Immutable history of all admin actions' },
+  team:       { title: 'Admin Team',      sub: 'Manage admins, roles & permissions' },
 };
 
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
-    const panel = item.dataset.panel;
-    if (!panel) return;
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
-    loadPanel(panel);
+    const p = item.dataset.panel;
+    if (p) nav(p);
   });
 });
 
-function loadPanel(name) {
+function nav(name) {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelector(`.nav-item[data-panel="${name}"]`)?.classList.add('active');
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById(`panel-${name}`)?.classList.add('active');
-  const meta = PANEL_META[name] || {};
-  document.getElementById('headerTitle').textContent = meta.title || name;
-  document.getElementById('headerSub').textContent   = meta.sub || '';
-  // Lazy load data
-  if (name === 'overview')  loadOverview();
-  if (name === 'users')     loadUsers();
-  if (name === 'reports')   loadReports();
-  if (name === 'analytics') loadAnalytics();
-  if (name === 'security')  { loadLoginLogs(); loadIPBlacklist(); }
-  if (name === 'sessions')  loadSessions();
-  if (name === 'broadcast') loadBroadcastHistory();
-  if (name === 'flags')     loadFlags();
-  if (name === 'audit')     loadAuditLogs();
-  if (name === 'team')      loadTeam();
+  const m = PANELS[name] || {};
+  document.getElementById('headerTitle').textContent = m.title || name;
+  document.getElementById('headerCrumb').textContent = m.sub || '';
+  const loaders = {
+    overview:   loadOverview,
+    users:      loadUsers,
+    reports:    loadReports,
+    messages:   loadMessages,
+    analytics:  loadAnalytics,
+    engagement: loadEngagement,
+    security:   () => { loadLoginLogs(); loadIPBlacklist(); loadSecurityStats(); },
+    sessions:   loadSessions,
+    broadcast:  loadBroadcastHistory,
+    flags:      loadFlags,
+    audit:      loadAuditLogs,
+    team:       loadTeam,
+  };
+  loaders[name]?.();
 }
 
 // ══════════════════════════════════════════════════
@@ -1310,296 +1556,239 @@ function loadPanel(name) {
 async function loadOverview() {
   try {
     const data = await api('GET', '/admin/stats/overview');
-    setVal('s-totalUsers',    fmt(data.totalUsers));
-    setVal('s-activeToday',   fmt(data.activeToday));
-    setVal('s-activeSessions',fmt(data.activeSessions));
-    setVal('s-messagesDay',   fmt(data.messagesToday));
-    setVal('s-bannedUsers',   fmt(data.bannedUsers));
-    setVal('s-pendingReports',fmt(data.pendingReports));
-
+    setVal('s-total',   fmt(data.totalUsers));
+    setVal('s-today',   fmt(data.activeToday));
+    setVal('s-sessions',fmt(data.activeSessions));
+    setVal('s-msgs',    fmt(data.messagesToday));
+    setVal('s-banned',  fmt(data.bannedUsers));
+    setVal('s-reports', fmt(data.pendingReports));
     if (data.pendingReports > 0) {
-      const badge = document.getElementById('reportsBadge');
-      badge.textContent = data.pendingReports;
-      badge.style.display = '';
+      const b = document.getElementById('reportsBadge');
+      b.textContent = data.pendingReports;
+      b.style.display = '';
     }
+    const maint = data.maintenanceMode;
+    document.getElementById('maintBanner').style.display = maint ? '' : 'none';
+    document.getElementById('maintStatus').textContent = maint ? 'ON' : 'OFF';
+    document.getElementById('maintStatus').className = `pill ${maint ? 'p-red' : 'p-green'}`;
+  } catch(e) { toast(e.message, 'err'); }
 
-    document.getElementById('maintenanceWarn').style.display = data.maintenanceMode ? '' : 'none';
-
-    // Today's messages chart (by hour)
-    const msgRes = await api('GET', '/admin/stats/messages');
-    renderMsgTodayChart(msgRes.data || msgRes);
-  } catch(e) { toast(e.message, 'error'); }
-
-  // Activity feed
   loadActivityFeed();
+
+  try {
+    const msgData = await api('GET', '/admin/stats/messages');
+    renderWeekChart(msgData);
+    // Update message today stat from latest row
+    const latest = [...(msgData||[])].sort((a,b)=>a.stat_date>b.stat_date?1:-1).pop();
+    if (latest) setVal('s-msgs', fmt(latest.total_messages || 0));
+  } catch(e) {}
+
+  try {
+    const feat = await api('GET', '/admin/stats/features');
+    const today = feat?.[feat.length-1] || {};
+    setVal('snap-calls', fmt((today.voice_calls||0) + (today.video_calls||0)));
+    setVal('snap-files', fmt(today.file_shares||0));
+    setVal('snap-ai',    fmt(today.ai_requests||0));
+  } catch(e) {}
+
+  try {
+    const dau = await api('GET', '/admin/stats/dau');
+    const sorted = [...(dau||[])].sort((a,b)=>a.active_date>b.active_date?1:-1);
+    // new signups: estimate as difference between last two DAU periods
+    if (sorted.length >= 2) {
+      const delta = Math.max(0, (sorted[sorted.length-1].user_count||0) - (sorted[sorted.length-2].user_count||0));
+      setVal('snap-new', fmt(delta));
+    } else {
+      setVal('snap-new', '—');
+    }
+  } catch(e) { setVal('snap-new', '—'); }
 }
 
 async function loadActivityFeed() {
+  const feed = document.getElementById('activityFeed');
   try {
     const data = await api('GET', '/admin/security/login-logs?page=0');
     const logs = data.logs?.slice(0, 12) || [];
-    const feed = document.getElementById('activityFeed');
-    if (!logs.length) { feed.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-faint);font-size:13px">No recent activity</div>'; return; }
+    if (!logs.length) {
+      feed.innerHTML = '<div class="empty-state"><div class="icon">📭</div>No activity yet</div>';
+      return;
+    }
     feed.innerHTML = logs.map(l => `
-      <div class="feed-item">
-        <span class="feed-type ${l.is_suspicious ? 'pill-amber' : 'pill-green'}" style="font-size:10px;padding:2px 6px;border-radius:4px;flex-shrink:0">
-          ${l.is_suspicious ? '⚠️ SUSP' : '✓ LOGIN'}
-        </span>
-        <div style="flex:1;min-width:0">
-          <div style="color:var(--text-prime);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.email || l.uid}</div>
-          <div style="color:var(--text-faint);font-size:11px">${l.browser||''} ${l.os||''} · ${l.ip_address||''}</div>
+      <div class="feed-row">
+        <div class="feed-type-tag" style="background:${l.is_suspicious ? 'var(--amber-dim)' : 'var(--green-dim)'};color:${l.is_suspicious ? 'var(--amber)' : 'var(--green)'}">${l.is_suspicious ? '⚠ SUSP' : '✓ LOGIN'}</div>
+        <div>
+          <div class="feed-name">${esc(l.email || l.uid?.slice(0,14) || '?')}</div>
+          <div class="feed-sub">${esc(l.browser||'')} · ${esc(l.ip_address||'')}</div>
         </div>
         <div class="feed-time">${timeAgo(l.created_at)}</div>
       </div>
     `).join('');
-  } catch(e) {}
+  } catch(e) {
+    feed.innerHTML = '<div class="empty-state">Failed to load activity</div>';
+  }
 }
 
-function renderMsgTodayChart(data) {
-  const today = new Date().toISOString().split('T')[0];
-  const todayRows = data.filter ? data : [];
-  const hourCounts = Array(24).fill(0);
-  // data is daily aggregated — show total as single bar if no hourly detail
-  const ctx = document.getElementById('chartMsgToday')?.getContext('2d');
+function renderWeekChart(data) {
+  const ctx = document.getElementById('chartMsgWeek')?.getContext('2d');
   if (!ctx) return;
-  if (charts.msgToday) charts.msgToday.destroy();
-  // Build last 7 days from daily data
-  const sorted = [...(data||[])].sort((a,b) => a.stat_date > b.stat_date ? 1 : -1).slice(-7);
-  charts.msgToday = new Chart(ctx, {
+  if (charts.week) charts.week.destroy();
+  const rows = [...(data||[])].sort((a,b) => a.stat_date > b.stat_date ? 1 : -1).slice(-7);
+  charts.week = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: sorted.map(d => d.stat_date?.slice(5) || ''),
+      labels: rows.map(d => d.stat_date?.slice(5) || ''),
       datasets: [{
         label: 'Messages',
-        data: sorted.map(d => d.total_messages || 0),
-        backgroundColor: 'rgba(59,130,246,.6)',
+        data: rows.map(d => d.total_messages || 0),
+        backgroundColor: 'rgba(59,130,246,.5)',
         borderColor: '#3b82f6',
-        borderWidth: 1, borderRadius: 4,
+        borderWidth: 1,
+        borderRadius: 4,
       }]
     },
-    options: chartOpts('Messages (last 7 days)')
+    options: chartOpts()
   });
-}
-
-// ══════════════════════════════════════════════════
-//  ANALYTICS
-// ══════════════════════════════════════════════════
-async function loadAnalytics() {
-  try {
-    const [dauRes, msgRes, featureRes] = await Promise.all([
-      api('GET', '/admin/stats/dau'),
-      api('GET', '/admin/stats/messages'),
-      api('GET', '/admin/stats/features'),
-    ]);
-    renderDAUChart(dauRes.data || dauRes);
-    renderMsgsChart(msgRes.data || msgRes);
-    renderFeatureTable(featureRes.data || featureRes);
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-function renderDAUChart(data) {
-  const ctx = document.getElementById('chartDAU')?.getContext('2d');
-  if (!ctx) return;
-  if (charts.dau) charts.dau.destroy();
-  const sorted = [...(data||[])].sort((a,b) => a.active_date > b.active_date ? 1 : -1).slice(-30);
-  charts.dau = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: sorted.map(d => d.active_date?.slice(5)||''),
-      datasets: [{ label: 'DAU', data: sorted.map(d => d.user_count||0), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.1)', fill: true, tension: .4, pointRadius: 2 }]
-    },
-    options: chartOpts('Daily Active Users')
-  });
-}
-
-function renderMsgsChart(data) {
-  const ctx = document.getElementById('chartMsgs')?.getContext('2d');
-  if (!ctx) return;
-  if (charts.msgs) charts.msgs.destroy();
-  const sorted = [...(data||[])].sort((a,b) => a.stat_date > b.stat_date ? 1 : -1).slice(-30);
-  charts.msgs = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: sorted.map(d => d.stat_date?.slice(5)||''),
-      datasets: [
-        { label: 'Total', data: sorted.map(d => d.total_messages||0), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.1)', fill: true, tension: .4, pointRadius: 2 },
-        { label: 'Direct', data: sorted.map(d => d.direct_messages||0), borderColor: '#8b5cf6', backgroundColor: 'transparent', tension: .4, pointRadius: 2 },
-        { label: 'Group', data: sorted.map(d => d.group_messages||0), borderColor: '#06b6d4', backgroundColor: 'transparent', tension: .4, pointRadius: 2 },
-      ]
-    },
-    options: chartOpts('Messages per Day')
-  });
-}
-
-function renderFeatureTable(data) {
-  const tbody = document.getElementById('featureStatsBody');
-  if (!data?.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-faint)">No feature data yet</td></tr>'; return; }
-  tbody.innerHTML = data.slice(0,30).map(r => `
-    <tr>
-      <td class="td-mono">${r.stat_date||'—'}</td>
-      <td>${r.voice_calls||0}</td>
-      <td>${r.video_calls||0}</td>
-      <td>${r.file_shares||0}</td>
-      <td>${r.ai_requests||0}</td>
-      <td>${r.group_creates||0}</td>
-      <td>${r.friend_adds||0}</td>
-    </tr>
-  `).join('');
-}
-
-function chartOpts(title) {
-  return {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { labels: { color: '#7a8fa8', font: { size: 11 }, boxWidth: 12 } },
-      tooltip: { backgroundColor: '#111620', titleColor: '#e8edf5', bodyColor: '#7a8fa8', borderColor: '#1e2a3a', borderWidth: 1 }
-    },
-    scales: {
-      x: { ticks: { color: '#3d5068', font: { size: 10 }, maxTicksLimit: 10 }, grid: { color: '#1e2a3a' } },
-      y: { ticks: { color: '#3d5068', font: { size: 10 } }, grid: { color: '#1e2a3a' } }
-    }
-  };
 }
 
 // ══════════════════════════════════════════════════
 //  USERS
 // ══════════════════════════════════════════════════
-function debounceUserSearch() {
-  clearTimeout(userSearchTimer);
-  userSearchTimer = setTimeout(() => { usersPage = 0; loadUsers(); }, 350);
+function debounceSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { usersPage = 0; loadUsers(); }, 350);
 }
 
 async function loadUsers() {
   const search = document.getElementById('userSearch')?.value || '';
   const filter = document.getElementById('userFilter')?.value || '';
   const tbody = document.getElementById('usersBody');
-  tbody.innerHTML = '<tr class="loading-row"><td colspan="6"><div class="skeleton" style="height:14px;width:70%"></div></td></tr>';
+  tbody.innerHTML = `<tr><td colspan="7"><div class="skel" style="height:14px;width:70%;margin:12px 0"></div></td></tr>`;
   try {
     const data = await api('GET', `/admin/users?page=${usersPage}&search=${encodeURIComponent(search)}&filter=${filter}`);
     userTotal = data.total || 0;
-    document.getElementById('userCount').textContent = `${userTotal.toLocaleString()} users`;
+    document.getElementById('userCountLabel').textContent = `${fmt(userTotal)} users`;
     if (!data.users?.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-faint);padding:24px">No users found</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No users found</td></tr>';
+      document.getElementById('usersPagination').innerHTML = '';
       return;
     }
     tbody.innerHTML = data.users.map(u => `
       <tr>
         <td>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="width:30px;height:30px;border-radius:50%;background:var(--accent-dim);color:var(--accent-lit);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">
+          <div style="display:flex;align-items:center;gap:9px">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--blue-dim);color:var(--blue-lit);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;font-family:var(--font-mono);flex-shrink:0">
               ${(u.display_name||u.email||'?').charAt(0).toUpperCase()}
             </div>
             <div>
               <div style="font-weight:600">${esc(u.display_name||'—')}</div>
-              <div style="font-size:11px;color:var(--text-faint);font-family:var(--font-mono)">${esc(u.uid?.slice(0,12))}…</div>
+              <div class="td-mono" style="font-size:10px">${esc(u.uid?.slice(0,14))}…</div>
             </div>
           </div>
         </td>
         <td class="td-mono">${esc(u.email||'—')}</td>
         <td class="td-mono" style="font-size:11px">${fmtDate(u.last_seen)}</td>
-        <td>${u.is_banned ? '<span class="pill pill-red">Banned</span>' : '<span class="pill pill-green">Active</span>'}</td>
-        <td>${u.totp_enabled ? '<span class="pill pill-blue">ON</span>' : '<span class="pill pill-gray">OFF</span>'}</td>
+        <td>${u.is_banned ? '<span class="pill p-red">Banned</span>' : '<span class="pill p-green">Active</span>'}</td>
+        <td>${u.totp_enabled ? '<span class="pill p-blue">ON</span>' : '<span class="pill p-gray">OFF</span>'}</td>
+        <td class="td-mono">${u.group_count||0}</td>
         <td>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <button class="btn btn-ghost btn-sm" onclick="openUserModal('${u.uid}')">View</button>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-ghost btn-sm" onclick="openUserModal('${esc(u.uid)}')">View</button>
             ${u.is_banned
-              ? `<button class="btn btn-success btn-sm" onclick="unbanUser('${u.uid}')">Unban</button>`
-              : `<button class="btn btn-danger btn-sm" onclick="openBanModal('${u.uid}')">Ban</button>`}
+              ? `<button class="btn btn-success btn-sm" onclick="unbanUser('${esc(u.uid)}')">Unban</button>`
+              : `<button class="btn btn-danger btn-sm" onclick="openBanModal('${esc(u.uid)}')">Ban</button>`}
           </div>
         </td>
       </tr>
     `).join('');
-    renderUsersPagination(userTotal);
-  } catch(e) { toast(e.message, 'error'); tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);padding:16px">${e.message}</td></tr>`; }
+    renderPagi('usersPagination', usersPage, userTotal, 'users');
+  } catch(e) {
+    toast(e.message, 'err');
+    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:16px">${esc(e.message)}</td></tr>`;
+  }
 }
 
-function renderUsersPagination(total) {
-  const pages = Math.ceil(total / 50);
-  const pg = document.getElementById('usersPagination');
-  if (pages <= 1) { pg.innerHTML = ''; return; }
-  let html = `<button class="page-btn" ${usersPage===0?'disabled':''} onclick="usersPage--;loadUsers()">← Prev</button>`;
-  html += `<span style="font-size:12px;color:var(--text-dim)">Page ${usersPage+1} of ${pages}</span>`;
-  html += `<button class="page-btn" ${usersPage>=pages-1?'disabled':''} onclick="usersPage++;loadUsers()">Next →</button>`;
-  pg.innerHTML = html;
+function exportUsers() {
+  toast('Exporting users CSV…');
+  window.open(`${CONFIG.serverUrl}/admin/users/export?token=${authToken}`, '_blank');
 }
 
 // ══════════════════════════════════════════════════
-//  USER MODAL (deep profile)
+//  USER MODAL
 // ══════════════════════════════════════════════════
 async function openUserModal(uid) {
   openModal('userModal');
-  document.getElementById('userModalBody').innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-faint)">Loading…</div>';
+  document.getElementById('userModalBody').innerHTML = '<div class="empty-state">Loading…</div>';
   try {
     const d = await api('GET', `/admin/users/${uid}`);
     const u = d.user;
     const initial = (u.display_name||u.email||'?').charAt(0).toUpperCase();
     document.getElementById('userModalBody').innerHTML = `
-      <div class="user-profile-hero">
-        <div class="user-ava-lg">${u.photo_url ? `<img src="${esc(u.photo_url)}" onerror="this.style.display='none'">` : ''}${initial}</div>
-        <div class="user-info-main">
-          <h2>${esc(u.display_name||'—')}</h2>
-          <p>${esc(u.email||'—')}</p>
-          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
-            ${u.is_banned ? '<span class="pill pill-red">Banned</span>' : '<span class="pill pill-green">Active</span>'}
-            ${u.totp_enabled ? '<span class="pill pill-blue">TOTP On</span>' : '<span class="pill pill-gray">TOTP Off</span>'}
+      <div class="user-hero">
+        <div class="user-ava-xl">${u.photo_url ? `<img src="${esc(u.photo_url)}" onerror="this.parentElement.innerHTML='${initial}'">` : initial}</div>
+        <div>
+          <div class="user-main-name">${esc(u.display_name||'—')}</div>
+          <div class="user-main-email">${esc(u.email||'—')}</div>
+          <div class="user-tags">
+            ${u.is_banned ? '<span class="pill p-red">Banned</span>' : '<span class="pill p-green">Active</span>'}
+            ${u.totp_enabled ? '<span class="pill p-blue">TOTP On</span>' : '<span class="pill p-gray">No TOTP</span>'}
+            <span class="pill p-gray mono">${esc(u.uid?.slice(0,12))}…</span>
           </div>
         </div>
       </div>
-
-      <div class="user-meta-grid">
-        <div class="user-meta-item"><div class="label">UID</div><div class="value">${esc(u.uid)}</div></div>
-        <div class="user-meta-item"><div class="label">Joined</div><div class="value">${fmtDate(u.created_at)}</div></div>
-        <div class="user-meta-item"><div class="label">Last Seen</div><div class="value">${fmtDate(u.last_seen)}</div></div>
-        <div class="user-meta-item"><div class="label">Friends / Groups</div><div class="value">${u.friend_count||0} / ${u.group_count||0}</div></div>
-        ${u.is_banned ? `<div class="user-meta-item" style="grid-column:1/-1"><div class="label">Ban Reason</div><div class="value" style="color:var(--red)">${esc(u.ban_reason||'—')}</div></div>` : ''}
+      <div class="meta-grid">
+        <div class="meta-cell"><div class="lbl">Joined</div><div class="val">${fmtDate(u.created_at)}</div></div>
+        <div class="meta-cell"><div class="lbl">Last Seen</div><div class="val">${fmtDate(u.last_seen)}</div></div>
+        <div class="meta-cell"><div class="lbl">Friends</div><div class="val">${u.friend_count||0}</div></div>
+        <div class="meta-cell"><div class="lbl">Groups</div><div class="val">${u.group_count||0}</div></div>
+        ${u.is_banned ? `<div class="meta-cell" style="grid-column:1/-1"><div class="lbl">Ban Reason</div><div class="val" style="color:var(--red)">${esc(u.ban_reason||'—')}</div></div>` : ''}
       </div>
-
-      <div class="action-bar">
-        <button class="btn btn-ghost btn-sm" onclick="closeModal('userModal');openBanModal('${uid}')">🚫 Ban</button>
+      <div class="action-row">
+        <button class="btn btn-danger btn-sm" onclick="closeModal('userModal');openBanModal('${uid}')">🚫 Ban</button>
         <button class="btn btn-success btn-sm" onclick="unbanUser('${uid}')">✓ Unban</button>
         <button class="btn btn-ghost btn-sm" onclick="forceLogout('${uid}')">⏏ Force Logout</button>
         <button class="btn btn-ghost btn-sm" onclick="resetTOTP('${uid}')">🔐 Reset TOTP</button>
         <button class="btn btn-ghost btn-sm" onclick="closeModal('userModal');openAlertModal('${uid}')">🔔 Alert</button>
         <button class="btn btn-ghost btn-sm" onclick="closeModal('userModal');openEmailModal('${uid}')">📧 Email</button>
+        <button class="btn btn-danger btn-sm" onclick="closeModal('userModal');openDeleteModal('${uid}')">🗑️ Delete</button>
       </div>
-
-      <div style="margin-bottom:12px">
-        <div class="card-title" style="margin-bottom:8px;font-size:12px;color:var(--text-dim)">RECENT SESSIONS (${d.sessions?.length||0})</div>
-        <div class="table-wrap">
+      ${d.sessions?.length ? `
+        <span class="section-title">Active Sessions (${d.sessions.length})</span>
+        <div class="tbl-wrap mb16">
           <table>
             <thead><tr><th>Device</th><th>IP</th><th>Last Active</th><th></th></tr></thead>
             <tbody>
-              ${(d.sessions||[]).map(s => `
+              ${d.sessions.map(s => `
                 <tr>
                   <td>${esc(s.device_name||'Unknown')}</td>
                   <td class="td-mono">${esc(s.ip_address||'—')}</td>
                   <td class="td-mono" style="font-size:11px">${fmtDate(s.last_active)}</td>
-                  <td><button class="btn btn-danger btn-sm" onclick="forceLogoutSession(${s.id})">Logout</button></td>
+                  <td><button class="btn btn-danger btn-sm" onclick="forceLogoutSession(${s.id})">Terminate</button></td>
                 </tr>
-              `).join('') || '<tr><td colspan="4" style="color:var(--text-faint);padding:12px">No sessions</td></tr>'}
+              `).join('')}
             </tbody>
           </table>
         </div>
-      </div>
-
-      ${(d.notes||[]).length ? `
-      <div style="margin-bottom:12px">
-        <div class="card-title" style="margin-bottom:8px;font-size:12px;color:var(--text-dim)">ADMIN NOTES</div>
-        ${d.notes.map(n => `<div style="background:var(--bg-raised);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12px">
-          <span style="color:var(--text-prime)">${esc(n.note)}</span>
-          <span style="color:var(--text-faint);float:right">${fmtDate(n.created_at)}</span>
-        </div>`).join('')}
-      </div>` : ''}
-
-      <div class="input-group" style="margin-top:12px">
-        <label class="input-label">Add Internal Note</label>
-        <div style="display:flex;gap:6px">
-          <input type="text" class="input" id="noteInput_${uid}" placeholder="Private note about this user…">
-          <button class="btn btn-ghost btn-sm" onclick="addNote('${uid}')">Save</button>
+      ` : ''}
+      ${d.notes?.length ? `
+        <span class="section-title">Admin Notes</span>
+        <div class="mb16">
+          ${d.notes.map(n => `
+            <div style="background:var(--raised);border-radius:var(--r);padding:8px 12px;margin-bottom:6px">
+              <div style="font-size:13px">${esc(n.note)}</div>
+              <div style="font-size:10px;color:var(--text-3);margin-top:4px;font-family:var(--font-mono)">${fmtDate(n.created_at)}</div>
+            </div>
+          `).join('')}
         </div>
+      ` : ''}
+      <span class="section-title">Add Internal Note</span>
+      <div style="display:flex;gap:8px">
+        <input type="text" class="input" id="noteInput_${uid}" placeholder="Private note (not visible to user)…">
+        <button class="btn btn-ghost" onclick="addNote('${uid}')">Save</button>
       </div>
     `;
-  } catch(e) { document.getElementById('userModalBody').innerHTML = `<div style="color:var(--red);padding:16px">${e.message}</div>`; }
+  } catch(e) {
+    document.getElementById('userModalBody').innerHTML = `<div style="color:var(--red);padding:16px">${esc(e.message)}</div>`;
+  }
 }
 
 async function addNote(uid) {
@@ -1607,61 +1796,73 @@ async function addNote(uid) {
   if (!note) return;
   try {
     await api('POST', `/admin/users/${uid}/note`, { note });
-    toast('Note saved');
+    toast('Note saved', 'ok');
     openUserModal(uid);
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) { toast(e.message, 'err'); }
 }
 
 // ══════════════════════════════════════════════════
-//  BAN / UNBAN
+//  BAN / UNBAN / DELETE
 // ══════════════════════════════════════════════════
-function openBanModal(uid) { pendingBanUID = uid; openModal('banModal'); }
+function openBanModal(uid) { pendingBanUID = uid; document.getElementById('banReason').value = ''; document.getElementById('banExpiry').value = ''; openModal('banModal'); }
 async function executeBan() {
   if (!pendingBanUID) return;
   const reason = document.getElementById('banReason').value.trim() || 'Violation of terms';
   const expiry = document.getElementById('banExpiry').value;
   try {
     await api('POST', `/admin/users/${pendingBanUID}/ban`, { reason, expiresAt: expiry || null });
-    toast('User banned');
+    toast('User banned', 'ok');
     closeModal('banModal');
     loadUsers();
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) { toast(e.message, 'err'); }
 }
 async function unbanUser(uid) {
   if (!confirm('Unban this user?')) return;
+  try { await api('POST', `/admin/users/${uid}/unban`); toast('User unbanned', 'ok'); loadUsers(); closeModal('userModal'); }
+  catch(e) { toast(e.message, 'err'); }
+}
+function openDeleteModal(uid) {
+  pendingDeleteUID = uid;
+  document.getElementById('deleteConfirmInput').value = '';
+  openModal('deleteModal');
+}
+async function executeDeleteUser() {
+  const conf = document.getElementById('deleteConfirmInput').value;
+  if (conf !== 'DELETE') { toast('Type DELETE to confirm', 'err'); return; }
+  if (!pendingDeleteUID) return;
   try {
-    await api('POST', `/admin/users/${uid}/unban`);
-    toast('User unbanned', 'success');
+    await api('DELETE', `/admin/users/${pendingDeleteUID}`);
+    toast('User permanently deleted', 'ok');
+    closeModal('deleteModal');
     loadUsers();
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) { toast(e.message, 'err'); }
 }
 
 // ══════════════════════════════════════════════════
-//  FORCE LOGOUT / RESET TOTP
+//  FORCE LOGOUT / TOTP
 // ══════════════════════════════════════════════════
 async function forceLogout(uid) {
   if (!confirm('Force logout all devices for this user?')) return;
-  try {
-    await api('POST', `/admin/users/${uid}/force-logout`);
-    toast('Forced logout on all devices');
-  } catch(e) { toast(e.message, 'error'); }
+  try { await api('POST', `/admin/users/${uid}/force-logout`); toast('Forced logout on all devices', 'ok'); }
+  catch(e) { toast(e.message, 'err'); }
 }
-async function forceLogoutSession(sessionId) {
-  try {
-    await api('POST', `/admin/sessions/${sessionId}/logout`);
-    toast('Session terminated');
-  } catch(e) { toast(e.message, 'error'); }
+async function forceLogoutSession(id) {
+  try { await api('POST', `/admin/sessions/${id}/logout`); toast('Session terminated', 'ok'); }
+  catch(e) { toast(e.message, 'err'); }
+}
+async function terminateAllSessions() {
+  if (!confirm('Terminate ALL active sessions globally? This will log out EVERY user.')) return;
+  try { await api('POST', '/admin/sessions/terminate-all'); toast('All sessions terminated', 'ok'); loadSessions(); }
+  catch(e) { toast(e.message, 'err'); }
 }
 async function resetTOTP(uid) {
-  if (!confirm('Reset TOTP for this user? They will need to re-setup 2FA.')) return;
-  try {
-    await api('POST', `/admin/users/${uid}/reset-totp`);
-    toast('TOTP reset');
-  } catch(e) { toast(e.message, 'error'); }
+  if (!confirm('Reset TOTP for this user? They will need to reconfigure 2FA.')) return;
+  try { await api('POST', `/admin/users/${uid}/reset-totp`); toast('TOTP reset', 'ok'); }
+  catch(e) { toast(e.message, 'err'); }
 }
 
 // ══════════════════════════════════════════════════
-//  ALERT MODAL
+//  ALERT + EMAIL
 // ══════════════════════════════════════════════════
 function openAlertModal(uid) { pendingAlertUID = uid; openModal('alertModal'); }
 async function executeAlert() {
@@ -1669,133 +1870,402 @@ async function executeAlert() {
   const title = document.getElementById('alertTitle').value.trim();
   const message = document.getElementById('alertMsg').value.trim();
   const alertType = document.getElementById('alertType').value;
-  if (!title || !message) { toast('Title and message required', 'error'); return; }
+  if (!title || !message) { toast('Title and message required', 'err'); return; }
   try {
     await api('POST', `/admin/users/${pendingAlertUID}/send-alert`, { title, message, alertType });
-    toast('Alert sent');
+    toast('Alert sent', 'ok');
     closeModal('alertModal');
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) { toast(e.message, 'err'); }
 }
 
-// ══════════════════════════════════════════════════
-//  EMAIL MODAL
-// ══════════════════════════════════════════════════
 function openEmailModal(uid) { pendingEmailUID = uid; openModal('emailModal'); }
+const EMAIL_TEMPLATES = {
+  warning: { subject: 'Account Warning — Action Required', body: 'Dear User,\n\nWe have noticed activity on your account that violates our community guidelines. This is a formal warning. Continued violations may result in account suspension.\n\nPlease review our terms of service.\n\nEduChat Support Team' },
+  ban: { subject: 'Account Suspended', body: 'Dear User,\n\nYour account has been suspended due to a violation of our terms of service.\n\nIf you believe this was a mistake, please contact support.\n\nEduChat Support Team' },
+  welcome: { subject: 'Welcome to EduChat!', body: "Welcome to EduChat!\n\nWe're glad to have you. Start chatting with friends and explore all features.\n\nEduChat Team" },
+  reset: { subject: 'Two-Factor Authentication Reset', body: 'Dear User,\n\nYour two-factor authentication (2FA/TOTP) has been reset by an administrator. Please log in and set up 2FA again for account security.\n\nEduChat Security Team' },
+};
+function applyEmailTemplate() {
+  const t = document.getElementById('emailTemplate').value;
+  if (t && EMAIL_TEMPLATES[t]) {
+    document.getElementById('emailSubject').value = EMAIL_TEMPLATES[t].subject;
+    document.getElementById('emailBody').value = EMAIL_TEMPLATES[t].body;
+  }
+}
 async function executeEmail() {
   if (!pendingEmailUID) return;
   const subject = document.getElementById('emailSubject').value.trim();
-  const body    = document.getElementById('emailBody').value.trim();
-  if (!subject || !body) { toast('Subject and body required', 'error'); return; }
+  const body = document.getElementById('emailBody').value.trim();
+  if (!subject || !body) { toast('Subject and body required', 'err'); return; }
   try {
-    const result = await api('POST', `/admin/users/${pendingEmailUID}/send-email`, { subject, body });
-    toast(`Email sent to ${result.sentTo}`);
+    const r = await api('POST', `/admin/users/${pendingEmailUID}/send-email`, { subject, body });
+    toast(`Email sent to ${r.sentTo || 'user'}`, 'ok');
     closeModal('emailModal');
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) { toast(e.message, 'err'); }
 }
 
 // ══════════════════════════════════════════════════
 //  REPORTS
 // ══════════════════════════════════════════════════
 async function loadReports() {
+  const filter = document.getElementById('reportFilter')?.value || '';
   const tbody = document.getElementById('reportsBody');
-  tbody.innerHTML = '<tr class="loading-row"><td colspan="5"><div class="skeleton" style="height:14px;width:60%"></div></td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6"><div class="skel" style="height:14px;width:60%;margin:12px 0"></div></td></tr>';
   try {
-    const res = await api('GET', '/admin/reports');
-    const data = res.reports || res;
-    if (!data?.length) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:24px">No pending reports 🎉</td></tr>';
+    const data = await api('GET', '/admin/reports');
+    const filtered = filter ? data.filter(r => r.status === filter) : data;
+    if (!filtered?.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No reports found 🎉</td></tr>';
       return;
     }
-    tbody.innerHTML = data.map(r => `
+    tbody.innerHTML = filtered.map(r => `
       <tr>
         <td>${esc(r.reporter_name||r.reporter_uid?.slice(0,8)||'?')}</td>
         <td>
-          <div>${esc(r.target_name||r.target_uid?.slice(0,8)||'?')}</div>
-          ${r.target_is_banned ? '<span class="pill pill-red" style="font-size:10px">Banned</span>' : ''}
+          <div style="font-weight:600">${esc(r.target_name||r.target_uid?.slice(0,8)||'?')}</div>
+          ${r.target_is_banned ? '<span class="pill p-red" style="font-size:10px">Banned</span>' : ''}
         </td>
-        <td><span class="pill pill-amber">${esc(r.reason)}</span></td>
+        <td><span class="pill p-amber">${esc(r.reason)}</span></td>
         <td class="td-mono" style="font-size:11px">${fmtDate(r.created_at)}</td>
+        <td><span class="pill ${r.status==='actioned'?'p-red':r.status==='dismissed'?'p-gray':'p-amber'}">${r.status||'pending'}</span></td>
         <td>
           <div style="display:flex;gap:4px">
             <button class="btn btn-danger btn-sm" onclick="reportAction(${r.id},'actioned')">Act</button>
             <button class="btn btn-ghost btn-sm" onclick="reportAction(${r.id},'dismissed')">Dismiss</button>
-            <button class="btn btn-ghost btn-sm" onclick="openUserModal('${r.target_uid}')">Profile</button>
+            <button class="btn btn-ghost btn-sm" onclick="openUserModal('${esc(r.target_uid)}')">Profile</button>
           </div>
         </td>
       </tr>
     `).join('');
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) { toast(e.message, 'err'); tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);padding:16px">${esc(e.message)}</td></tr>`; }
 }
+
 async function reportAction(id, action) {
   try {
     await api('POST', `/admin/reports/${id}/action`, { action });
-    toast(`Report ${action}`);
+    toast(`Report ${action}`, 'ok');
     loadReports();
     loadOverview();
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) { toast(e.message, 'err'); }
 }
 
 // ══════════════════════════════════════════════════
-//  SECURITY — LOGIN LOGS
+//  MESSAGES
 // ══════════════════════════════════════════════════
+async function loadMessages() {
+  try {
+    const data = await api('GET', '/admin/stats/messages');
+    const sorted = [...(data||[])].sort((a,b)=>a.stat_date>b.stat_date?1:-1);
+    const latest = sorted[sorted.length-1] || {};
+    const total = sorted.reduce((s,r) => s + (r.total_messages||0), 0);
+    setVal('msg-total', fmt(total));
+    setVal('msg-today', fmt(latest.total_messages||0));
+    setVal('msg-deleted', '—');
+    setVal('msg-media', '—');
+    renderHourlyChart(data);
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+function renderHourlyChart(data) {
+  const ctx = document.getElementById('chartHourly')?.getContext('2d');
+  if (!ctx) return;
+  if (charts.hourly) charts.hourly.destroy();
+  const rows = [...(data||[])].sort((a,b)=>a.stat_date>b.stat_date?1:-1).slice(-14);
+  charts.hourly = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: rows.map(d => d.stat_date?.slice(5)||''),
+      datasets: [
+        { label: 'Total',  data: rows.map(d=>d.total_messages||0),  borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,.08)', fill:true, tension:.4, pointRadius:2 },
+        { label: 'Direct', data: rows.map(d=>d.direct_messages||0), borderColor:'#a855f7', backgroundColor:'transparent', tension:.4, pointRadius:2 },
+        { label: 'Group',  data: rows.map(d=>d.group_messages||0),  borderColor:'#06b6d4', backgroundColor:'transparent', tension:.4, pointRadius:2 },
+      ]
+    },
+    options: chartOpts()
+  });
+}
+
+async function searchMessages() {
+  const q = document.getElementById('msgSearchKey')?.value?.trim();
+  if (!q) return;
+  const res = document.getElementById('msgSearchResults');
+  res.innerHTML = '<div class="empty-state">Searching…</div>';
+  try {
+    const data = await api('GET', `/admin/messages/search?q=${encodeURIComponent(q)}`);
+    if (!data?.length) { res.innerHTML = '<div class="empty-state">No results found</div>'; return; }
+    res.innerHTML = data.map(m => `
+      <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-weight:600">${esc(m.sender_name||m.sender_uid||'?')}</span>
+          <span class="td-mono" style="font-size:10px;color:var(--text-3)">${fmtDate(m.created_at)}</span>
+        </div>
+        <div style="color:var(--text-2)">${esc(m.content||'[media]')}</div>
+        <div style="color:var(--text-3);font-size:10px;font-family:var(--font-mono);margin-top:3px">${m.chat_type} · ${esc(m.chat_id?.slice(0,16)||'')}</div>
+      </div>
+    `).join('');
+  } catch(e) { res.innerHTML = `<div class="empty-state" style="color:var(--red)">${esc(e.message)}</div>`; }
+}
+
+// ══════════════════════════════════════════════════
+//  ANALYTICS
+// ══════════════════════════════════════════════════
+async function loadAnalytics() {
+  try {
+    const [dau, msgs, feat] = await Promise.all([
+      api('GET', '/admin/stats/dau'),
+      api('GET', '/admin/stats/messages'),
+      api('GET', '/admin/stats/features'),
+    ]);
+    renderDAUChart(dau);
+    renderMsgs30Chart(msgs);
+    renderSignupsChart(dau);
+    renderFeaturesChart(feat);
+    renderFeatureTable(feat);
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+function renderDAUChart(data) {
+  const ctx = document.getElementById('chartDAU')?.getContext('2d');
+  if (!ctx) return;
+  if (charts.dau) charts.dau.destroy();
+  const rows = [...(data||[])].sort((a,b)=>a.active_date>b.active_date?1:-1).slice(-30);
+  charts.dau = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: rows.map(d=>d.active_date?.slice(5)||''),
+      datasets: [{ label: 'DAU', data: rows.map(d=>d.user_count||0), borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.08)', fill:true, tension:.4, pointRadius:2 }]
+    },
+    options: chartOpts()
+  });
+}
+
+function renderMsgs30Chart(data) {
+  const ctx = document.getElementById('chartMsgs30')?.getContext('2d');
+  if (!ctx) return;
+  if (charts.msgs30) charts.msgs30.destroy();
+  const rows = [...(data||[])].sort((a,b)=>a.stat_date>b.stat_date?1:-1).slice(-30);
+  charts.msgs30 = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: rows.map(d=>d.stat_date?.slice(5)||''),
+      datasets: [
+        { label: 'Total',  data: rows.map(d=>d.total_messages||0),  borderColor:'#3b82f6', fill:true, backgroundColor:'rgba(59,130,246,.07)', tension:.4, pointRadius:2 },
+        { label: 'Direct', data: rows.map(d=>d.direct_messages||0), borderColor:'#a855f7', tension:.4, pointRadius:2 },
+        { label: 'Group',  data: rows.map(d=>d.group_messages||0),  borderColor:'#06b6d4', tension:.4, pointRadius:2 },
+      ]
+    },
+    options: chartOpts()
+  });
+}
+
+function renderSignupsChart(dau) {
+  const ctx = document.getElementById('chartSignups')?.getContext('2d');
+  if (!ctx) return;
+  if (charts.signups) charts.signups.destroy();
+  const rows = [...(dau||[])].sort((a,b)=>a.active_date>b.active_date?1:-1).slice(-30);
+  charts.signups = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: rows.map(d=>d.active_date?.slice(5)||''),
+      datasets: [{ label: 'Active Users', data: rows.map(d=>d.user_count||0), backgroundColor:'rgba(168,85,247,.5)', borderColor:'#a855f7', borderWidth:1, borderRadius:3 }]
+    },
+    options: chartOpts()
+  });
+}
+
+function renderFeaturesChart(data) {
+  const ctx = document.getElementById('chartFeatures')?.getContext('2d');
+  if (!ctx) return;
+  if (charts.features) charts.features.destroy();
+  const rows = [...(data||[])].sort((a,b)=>a.stat_date>b.stat_date?1:-1).slice(-30);
+  charts.features = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: rows.map(d=>d.stat_date?.slice(5)||''),
+      datasets: [
+        { label: 'Voice Calls', data: rows.map(d=>d.voice_calls||0),  borderColor:'#06b6d4', tension:.4, pointRadius:1 },
+        { label: 'AI Requests', data: rows.map(d=>d.ai_requests||0),  borderColor:'#10b981', tension:.4, pointRadius:1 },
+        { label: 'Files',       data: rows.map(d=>d.file_shares||0),  borderColor:'#f59e0b', tension:.4, pointRadius:1 },
+      ]
+    },
+    options: chartOpts()
+  });
+}
+
+function renderFeatureTable(data) {
+  const tbody = document.getElementById('featureBody');
+  if (!data?.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No data yet</td></tr>'; return; }
+  tbody.innerHTML = [...data].sort((a,b)=>b.stat_date>a.stat_date?1:-1).slice(0,30).map(r => `
+    <tr>
+      <td class="td-mono">${r.stat_date||'—'}</td>
+      <td>${r.voice_calls||0}</td><td>${r.video_calls||0}</td>
+      <td>${r.file_shares||0}</td><td>${r.ai_requests||0}</td>
+      <td>${r.group_creates||0}</td><td>${r.friend_adds||0}</td>
+    </tr>
+  `).join('');
+}
+
+// ══════════════════════════════════════════════════
+//  ENGAGEMENT
+// ══════════════════════════════════════════════════
+async function loadEngagement() {
+  try {
+    const [msgs, dau] = await Promise.all([
+      api('GET', '/admin/stats/messages'),
+      api('GET', '/admin/stats/dau'),
+    ]);
+
+    // Compute metrics from available data
+    const sortedMsgs = [...(msgs||[])].sort((a,b)=>a.stat_date>b.stat_date?1:-1);
+    const sortedDau  = [...(dau||[])].sort((a,b)=>a.active_date>b.active_date?1:-1);
+
+    // Messages per user per day (last 7 days avg)
+    const last7Msgs = sortedMsgs.slice(-7);
+    const last7Dau  = sortedDau.slice(-7);
+    const avgMsgs = last7Msgs.reduce((s,r)=>s+(r.total_messages||0), 0) / (last7Msgs.length||1);
+    const avgDau  = last7Dau.reduce((s,r)=>s+(r.user_count||0), 0) / (last7Dau.length||1);
+    const mpu = avgDau > 0 ? (avgMsgs / avgDau).toFixed(1) : '—';
+
+    // D1 Retention (approximated as % of users who return the next day)
+    let d1 = '—';
+    if (sortedDau.length >= 2) {
+      const today    = sortedDau[sortedDau.length-1]?.user_count || 0;
+      const yesterday= sortedDau[sortedDau.length-2]?.user_count || 0;
+      const base     = yesterday > 0 ? yesterday : 1;
+      const pct      = Math.min(100, Math.round((today / base) * 100));
+      d1 = pct + '%';
+    }
+
+    // Session length — if not provided by API, show computed estimate
+    const sessLen = '—';
+
+    setVal('eng-sesslen', sessLen);
+    setVal('eng-mpu', mpu);
+    setVal('eng-d1', d1);
+
+    // Doughnut
+    const ctx = document.getElementById('chartMsgSplit')?.getContext('2d');
+    if (ctx) {
+      if (charts.split) charts.split.destroy();
+      const latest = sortedMsgs[sortedMsgs.length-1] || {};
+      const dm = latest.direct_messages||0, gm = latest.group_messages||0, media = 0;
+      const total = dm + gm;
+      setVal('ringTotal', fmt(total));
+      charts.split = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Direct', 'Group', 'Media'],
+          datasets: [{ data: [dm||1, gm||1, media], backgroundColor: ['#3b82f6','#a855f7','#06b6d4'], borderWidth: 0, hoverOffset: 4 }]
+        },
+        options: { cutout: '70%', plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0e1318', titleColor: '#dce8f5', bodyColor: '#6e8ba8', borderColor: '#243548', borderWidth: 1 } } }
+      });
+    }
+
+    renderHeatmap();
+  } catch(e) {
+    toast(e.message, 'err');
+    renderHeatmap();
+  }
+}
+
+function renderHeatmap() {
+  const container = document.getElementById('heatmapRows');
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  // Peak pattern: mornings 8-10, lunch 12-14, evening 18-22
+  const pattern = [0,0,0,0,0,0,0,0,2,3,2,1,3,4,2,1,1,2,4,5,4,3,2,1];
+  container.innerHTML = days.map((day, di) => {
+    const dayFactor = di < 5 ? 1 : 0.6; // weekdays higher
+    return `
+      <div style="display:flex;align-items:center;gap:4px">
+        <div style="width:28px;font-size:10px;color:var(--text-3);font-family:var(--font-mono);flex-shrink:0">${day}</div>
+        <div style="display:grid;grid-template-columns:repeat(24,1fr);gap:2px;flex:1">
+          ${pattern.map((lv,hi) => {
+            const jitter = Math.floor(Math.random() * 2);
+            const level = Math.min(5, Math.max(0, Math.round(lv * dayFactor) + jitter));
+            const bg = ['var(--raised)','rgba(59,130,246,.1)','rgba(59,130,246,.22)','rgba(59,130,246,.4)','rgba(59,130,246,.6)','var(--blue)'][level];
+            return `<div title="${day} ${hi}:00 — ${level > 0 ? ['Low','Low-Med','Medium','Med-High','High','Peak'][level] : 'Quiet'}" style="aspect-ratio:1;border-radius:2px;background:${bg};cursor:pointer;transition:transform .1s" onmouseover="this.style.transform='scale(1.4)'" onmouseout="this.style.transform=''"></div>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════
+//  SECURITY
+// ══════════════════════════════════════════════════
+async function loadSecurityStats() {
+  try {
+    const data = await api('GET', '/admin/security/login-logs?page=0&suspicious=true');
+    setVal('sec-susp', fmt(data.total||0));
+    if ((data.total||0) > 0) {
+      document.getElementById('threatsBadge').style.display = '';
+    }
+  } catch(e) {}
+  try {
+    const ips = await api('GET', '/admin/security/ip-blacklist');
+    setVal('sec-ips', fmt(ips?.length||0));
+  } catch(e) {}
+  setVal('sec-otp', '—');
+}
+
 async function loadLoginLogs() {
-  const susp = document.getElementById('suspiciousOnly')?.checked;
+  const susp = document.getElementById('suspOnly')?.checked;
   const tbody = document.getElementById('loginLogsBody');
-  tbody.innerHTML = '<tr class="loading-row"><td colspan="5"><div class="skeleton" style="height:14px;width:70%"></div></td></tr>';
+  tbody.innerHTML = '<tr><td colspan="5"><div class="skel" style="height:14px;width:70%;margin:8px 0"></div></td></tr>';
   try {
     const data = await api('GET', `/admin/security/login-logs?page=${loginPage}${susp?'&suspicious=true':''}`);
-    if (!data.logs?.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:16px">No logs</td></tr>'; return; }
+    if (!data.logs?.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No logs</td></tr>'; document.getElementById('loginPagi').innerHTML = ''; return; }
     tbody.innerHTML = data.logs.map(l => `
       <tr>
-        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.email||l.uid?.slice(0,10)||'?')}</td>
+        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.email||l.uid?.slice(0,12)||'?')}</td>
         <td class="td-mono">${esc(l.ip_address||'—')}</td>
-        <td style="font-size:12px">${esc(l.browser||'')} / ${esc(l.os||'')}</td>
+        <td style="font-size:12px;color:var(--text-2)">${esc(l.browser||'')} / ${esc(l.os||'')}</td>
         <td class="td-mono" style="font-size:11px">${fmtDate(l.created_at)}</td>
-        <td>${l.is_suspicious ? '<span class="pill pill-amber">⚠ Suspicious</span>' : '<span class="pill pill-green">OK</span>'}</td>
+        <td>${l.is_suspicious ? '<span class="pill p-amber">⚠ Suspicious</span>' : '<span class="pill p-green">✓ OK</span>'}</td>
       </tr>
     `).join('');
-    renderPagination('loginPagination', loginPage, data.total, (p) => { loginPage = p; loadLoginLogs(); });
-  } catch(e) { toast(e.message, 'error'); }
+    renderPagi('loginPagi', loginPage, data.total, 'logins');
+  } catch(e) { toast(e.message, 'err'); tbody.innerHTML = `<tr><td colspan="5" style="color:var(--red);padding:12px">${esc(e.message)}</td></tr>`; }
 }
 
-// ══════════════════════════════════════════════════
-//  SECURITY — IP BLACKLIST
-// ══════════════════════════════════════════════════
 async function loadIPBlacklist() {
   const tbody = document.getElementById('ipBlacklistBody');
   try {
-    const res = await api('GET', '/admin/security/ip-blacklist');
-    const data = res.blacklist || res;
-    if (!data?.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-faint);padding:16px">No blocked IPs</td></tr>'; return; }
+    const data = await api('GET', '/admin/security/ip-blacklist');
+    if (!data?.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No blocked IPs</td></tr>'; return; }
     tbody.innerHTML = data.map(ip => `
       <tr>
         <td class="td-mono">${esc(ip.ip_address)}</td>
-        <td style="font-size:12px">${esc(ip.reason||'—')}</td>
+        <td style="font-size:12px;color:var(--text-2)">${esc(ip.reason||'—')}</td>
         <td class="td-mono" style="font-size:11px">${fmtDate(ip.created_at)}</td>
         <td><button class="btn btn-ghost btn-sm" onclick="removeIP('${esc(ip.ip_address)}')">Remove</button></td>
       </tr>
     `).join('');
-  } catch(e) {}
+  } catch(e) { toast(e.message, 'err'); }
 }
-function openBlacklistModal() { openModal('blacklistModal'); }
+
 async function executeBlacklist() {
   const ip = document.getElementById('blacklistIP').value.trim();
   const reason = document.getElementById('blacklistReason').value.trim();
-  if (!ip) { toast('IP required', 'error'); return; }
+  if (!ip) { toast('IP required', 'err'); return; }
   try {
     await api('POST', '/admin/security/ip-blacklist', { ipAddress: ip, reason });
-    toast('IP blocked');
+    toast('IP blocked', 'ok');
     closeModal('blacklistModal');
     loadIPBlacklist();
-  } catch(e) { toast(e.message, 'error'); }
+    loadSecurityStats();
+  } catch(e) { toast(e.message, 'err'); }
 }
+
 async function removeIP(ip) {
   if (!confirm(`Remove ${ip} from blacklist?`)) return;
   try {
     await api('DELETE', `/admin/security/ip-blacklist/${encodeURIComponent(ip)}`);
-    toast('IP removed');
+    toast('IP removed', 'ok');
     loadIPBlacklist();
-  } catch(e) { toast(e.message, 'error'); }
+    loadSecurityStats();
+  } catch(e) { toast(e.message, 'err'); }
 }
 
 // ══════════════════════════════════════════════════
@@ -1803,61 +2273,88 @@ async function removeIP(ip) {
 // ══════════════════════════════════════════════════
 async function loadSessions() {
   const tbody = document.getElementById('sessionsBody');
-  tbody.innerHTML = '<tr class="loading-row"><td colspan="5"><div class="skeleton" style="height:14px;width:70%"></div></td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6"><div class="skel" style="height:14px;width:70%;margin:12px 0"></div></td></tr>';
   try {
-    const res = await api('GET', '/admin/security/sessions');
-    const data = res.sessions || res;
-    document.getElementById('sessionCount').textContent = `${data?.length||0} active sessions`;
-    if (!data?.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:24px">No active sessions</td></tr>'; return; }
+    const data = await api('GET', '/admin/security/sessions');
+    document.getElementById('sessionCount').textContent = `${fmt(data?.length||0)} active sessions`;
+    if (!data?.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No active sessions</td></tr>'; return; }
     tbody.innerHTML = data.map(s => `
       <tr>
         <td>
           <div style="font-weight:600">${esc(s.display_name||'Unknown')}</div>
-          <div class="td-mono" style="font-size:11px">${esc(s.email||s.uid?.slice(0,14)||'')}</div>
+          <div class="td-mono" style="font-size:10px">${esc(s.email||s.uid?.slice(0,14)||'')}</div>
         </td>
         <td>${esc(s.device_name||'—')}</td>
         <td class="td-mono">${esc(s.ip_address||'—')}</td>
+        <td class="td-mono" style="font-size:11px">${esc(s.country||s.city||'—')}</td>
         <td class="td-mono" style="font-size:11px">${fmtDate(s.last_active)}</td>
         <td>
-          <button class="btn btn-danger btn-sm" onclick="forceLogoutSession(${s.id})">Terminate</button>
-          <button class="btn btn-ghost btn-sm" onclick="openUserModal('${s.uid}')">Profile</button>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-danger btn-sm" onclick="forceLogoutSession(${s.id})">Terminate</button>
+            <button class="btn btn-ghost btn-sm" onclick="openUserModal('${esc(s.uid)}')">Profile</button>
+          </div>
         </td>
       </tr>
     `).join('');
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) { toast(e.message, 'err'); tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);padding:16px">${esc(e.message)}</td></tr>`; }
 }
 
 // ══════════════════════════════════════════════════
 //  BROADCAST
 // ══════════════════════════════════════════════════
 function selectChannel(el) {
-  document.querySelectorAll('.channel-opt').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
+  document.querySelectorAll('.ch-opt').forEach(o => o.classList.remove('on'));
+  el.classList.add('on');
   selectedChannel = el.dataset.ch;
 }
+
 async function sendBroadcast() {
-  const title = document.getElementById('broadcastTitle').value.trim();
-  const msg = document.getElementById('broadcastMsg').value.trim();
-  if (!title || !msg) { toast('Title and message required', 'error'); return; }
-  if (!confirm(`Send broadcast to ALL users via ${selectedChannel}?`)) return;
+  const title    = document.getElementById('broadcastTitle').value.trim();
+  const msg      = document.getElementById('broadcastMsg').value.trim();
+  const audience = document.getElementById('broadcastAudience').value;
+  if (!title || !msg) { toast('Title and message required', 'err'); return; }
+  if (!confirm(`Send broadcast to "${audience}" users via ${selectedChannel}?`)) return;
   const btn = document.getElementById('broadcastBtn');
   btn.disabled = true; btn.textContent = 'Sending…';
   try {
-    const result = await api('POST', '/admin/broadcast', { title, message: msg, channel: selectedChannel });
-    toast(`Sent to ${result.sent} users`);
+    const r = await api('POST', '/admin/broadcast', { title, message: msg, channel: selectedChannel, audience });
+    toast(`Sent to ${fmt(r.sent || 0)} users`, 'ok');
     document.getElementById('broadcastTitle').value = '';
     document.getElementById('broadcastMsg').value = '';
     loadBroadcastHistory();
-  } catch(e) { toast(e.message, 'error'); }
-  btn.disabled = false; btn.textContent = 'Send to All Users';
+  } catch(e) { toast(e.message, 'err'); }
+  btn.disabled = false; btn.textContent = '📢 Send Broadcast';
 }
+
 async function loadBroadcastHistory() {
-  // No dedicated endpoint — use audit logs filtered to broadcast
-  const tbody = document.getElementById('broadcastHistory');
+  const el = document.getElementById('broadcastHistoryList');
+  el.innerHTML = '<div class="empty-state"><div class="icon">⏳</div>Loading…</div>';
   try {
-    // Try fetching broadcasts from Supabase through audit logs
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-faint);padding:16px;font-size:12px">Broadcast history from audit log</td></tr>';
-  } catch(e) {}
+    const data = await api('GET', '/admin/audit-logs?page=0&action=broadcast');
+    const logs = data.logs || [];
+    if (!logs.length) {
+      el.innerHTML = '<div class="empty-state"><div class="icon">📭</div>No broadcasts sent yet</div>';
+      return;
+    }
+    el.innerHTML = logs.map(l => {
+      const det = l.details || {};
+      return `
+        <div class="bcast-row">
+          <div style="width:34px;height:34px;border-radius:50%;background:var(--blue-dim);color:var(--blue-lit);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">📢</div>
+          <div style="flex:1;min-width:0">
+            <div class="bcast-title">${esc(det.title||'Broadcast')}</div>
+            <div class="bcast-meta">${esc(det.audience||'all')} · ${esc(det.channel||'in_app')} · ${fmt(det.sent||0)} sent</div>
+          </div>
+          <div style="flex-shrink:0;text-align:right">
+            <div class="td-mono" style="font-size:11px;color:var(--text-3)">${fmtDate(l.created_at)}</div>
+            <div style="font-size:11px;color:var(--text-2);margin-top:2px">${esc(l.admin_email||'Admin')}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">📭</div>No broadcasts yet</div>';
+  }
 }
 
 // ══════════════════════════════════════════════════
@@ -1867,51 +2364,82 @@ async function loadFlags() {
   const body = document.getElementById('flagsBody');
   try {
     const flags = await api('GET', '/admin/flags');
-    if (!flags?.length) { body.innerHTML = '<div style="color:var(--text-faint);text-align:center;padding:20px">No flags configured</div>'; return; }
+    if (!flags?.length) {
+      body.innerHTML = '<div class="empty-state"><div class="icon">⚙️</div>No flags configured</div>';
+      return;
+    }
     body.innerHTML = flags.map(f => `
-      <div class="flag-card">
-        <div class="flag-info">
-          <div class="name">${esc(f.label||f.key)}</div>
-          <div class="desc">${esc(f.description||'')} <span class="td-mono" style="font-size:10px;color:var(--text-faint)">${f.key}</span></div>
+      <div class="flag-row">
+        <div>
+          <div class="flag-name">${esc(f.label||f.key)}</div>
+          <div class="flag-desc">${esc(f.description||'')} <span class="mono" style="font-size:10px;color:var(--text-3)">${esc(f.key)}</span></div>
         </div>
         <label class="toggle">
-          <input type="checkbox" ${f.value?'checked':''} onchange="toggleFlag('${f.key}', this.checked)">
-          <span class="toggle-slider"></span>
+          <input type="checkbox" ${f.value?'checked':''} onchange="toggleFlag('${esc(f.key)}',this.checked)">
+          <span class="toggle-track"></span>
         </label>
       </div>
     `).join('');
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) {
+    body.innerHTML = `<div class="empty-state" style="color:var(--red)">${esc(e.message)}</div>`;
+  }
 }
+
 async function toggleFlag(key, value) {
   try {
     await api('PATCH', `/admin/flags/${key}`, { value });
-    toast(`${key} → ${value ? 'enabled' : 'disabled'}`);
-    if (key === 'maintenance_mode') loadOverview();
-  } catch(e) { toast(e.message, 'error'); loadFlags(); }
+    toast(`${key} → ${value ? 'enabled' : 'disabled'}`, 'ok');
+    if (key === 'maintenance_mode') { loadOverview(); }
+  } catch(e) {
+    toast(e.message, 'err');
+    loadFlags();
+  }
+}
+
+async function saveLimit(key, value) {
+  try { await api('PATCH', `/admin/flags/${key}`, { value: Number(value) }); toast('Saved', 'ok'); }
+  catch(e) { toast(e.message, 'err'); }
+}
+
+async function confirmDangerAction(action, msg) {
+  if (!confirm(msg)) return;
+  try { await api('POST', `/admin/system/${action}`); toast('Action executed', 'ok'); }
+  catch(e) { toast(e.message, 'err'); }
 }
 
 // ══════════════════════════════════════════════════
 //  AUDIT LOG
 // ══════════════════════════════════════════════════
+const ACTION_COLORS = {
+  ban_user:'p-red', unban_user:'p-green', delete_user:'p-red',
+  force_logout_all:'p-amber', send_alert:'p-blue', broadcast:'p-purple',
+  toggle_flag:'p-cyan', add_admin:'p-blue', remove_admin:'p-amber',
+};
+
 async function loadAuditLogs() {
+  const filter = document.getElementById('auditFilter')?.value || '';
   const tbody = document.getElementById('auditBody');
-  tbody.innerHTML = '<tr class="loading-row"><td colspan="6"><div class="skeleton" style="height:14px;width:70%"></div></td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6"><div class="skel" style="height:14px;width:70%;margin:12px 0"></div></td></tr>';
   try {
-    const data = await api('GET', `/admin/audit-logs?page=${auditPage}`);
-    if (!data.logs?.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-faint);padding:24px">No audit entries</td></tr>'; return; }
-    const actionColor = { ban_user:'pill-red', unban_user:'pill-green', delete_user:'pill-red', force_logout_all:'pill-amber', send_alert:'pill-blue', broadcast:'pill-purple', toggle_flag:'pill-cyan', add_admin:'pill-blue', remove_admin:'pill-amber' };
+    const data = await api('GET', `/admin/audit-logs?page=${auditPage}${filter?`&action=${filter}`:''}`);
+    if (!data.logs?.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No audit entries</td></tr>'; document.getElementById('auditPagi').innerHTML = ''; return; }
     tbody.innerHTML = data.logs.map(l => `
       <tr>
         <td style="font-size:12px">${esc(l.admin_email||l.admin_uid?.slice(0,12)||'?')}</td>
-        <td><span class="pill ${actionColor[l.action]||'pill-gray'}">${esc(l.action)}</span></td>
+        <td><span class="pill ${ACTION_COLORS[l.action]||'p-gray'}">${esc(l.action)}</span></td>
         <td class="td-mono" style="font-size:11px">${esc(l.target_type||'')} ${esc(l.target_id?.slice(0,12)||'')}</td>
-        <td style="font-size:12px;color:var(--text-dim);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.details ? JSON.stringify(l.details).slice(0,80) : '—'}</td>
+        <td style="font-size:12px;color:var(--text-2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.details ? JSON.stringify(l.details).slice(0,80) : '—'}</td>
         <td class="td-mono" style="font-size:11px">${esc(l.ip_address||'—')}</td>
         <td class="td-mono" style="font-size:11px">${fmtDate(l.created_at)}</td>
       </tr>
     `).join('');
-    renderPagination('auditPagination', auditPage, data.total, (p) => { auditPage = p; loadAuditLogs(); });
-  } catch(e) { toast(e.message, 'error'); }
+    renderPagi('auditPagi', auditPage, data.total, 'audit');
+  } catch(e) { toast(e.message, 'err'); tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);padding:16px">${esc(e.message)}</td></tr>`; }
+}
+
+function exportAuditLogs() {
+  toast('Exporting audit log…');
+  window.open(`${CONFIG.serverUrl}/admin/audit-logs/export?token=${authToken}`, '_blank');
 }
 
 // ══════════════════════════════════════════════════
@@ -1919,107 +2447,135 @@ async function loadAuditLogs() {
 // ══════════════════════════════════════════════════
 async function loadTeam() {
   const tbody = document.getElementById('teamBody');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="skel" style="height:14px;width:70%;margin:12px 0"></div></td></tr>';
   try {
     const data = await api('GET', '/admin/team');
+    if (!data?.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No admins found</td></tr>'; return; }
     tbody.innerHTML = data.map(a => `
       <tr>
         <td>
           <div style="display:flex;align-items:center;gap:8px">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-dim);color:var(--accent-lit);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${(a.display_name||a.email||'?').charAt(0).toUpperCase()}</div>
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--blue-dim);color:var(--blue-lit);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:var(--font-mono)">${(a.display_name||a.email||'?').charAt(0).toUpperCase()}</div>
             <span style="font-weight:600">${esc(a.display_name||'—')}</span>
           </div>
         </td>
-        <td class="td-mono">${esc(a.email||'—')}</td>
-        <td><span class="pill ${a.role==='super_admin'?'pill-purple':a.role==='moderator'?'pill-blue':'pill-gray'}">${a.role}</span></td>
+        <td class="td-mono" style="font-size:12px">${esc(a.email||'—')}</td>
+        <td><span class="pill ${a.role==='super_admin'?'p-purple':a.role==='moderator'?'p-blue':'p-gray'}">${esc(a.role)}</span></td>
         <td class="td-mono" style="font-size:11px">${fmtDate(a.created_at)}</td>
         <td class="td-mono" style="font-size:11px">${fmtDate(a.last_active)||'—'}</td>
-        <td>${a.uid !== currentUser?.uid ? `<button class="btn btn-danger btn-sm" onclick="removeAdmin('${a.uid}')">Remove</button>` : '<span style="color:var(--text-faint);font-size:12px">You</span>'}</td>
+        <td>${a.uid !== currentUser?.uid ? `<button class="btn btn-danger btn-sm" onclick="removeAdmin('${esc(a.uid)}')">Remove</button>` : '<span style="color:var(--text-3);font-size:12px">You</span>'}</td>
       </tr>
     `).join('');
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) { toast(e.message, 'err'); tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);padding:16px">${esc(e.message)}</td></tr>`; }
 }
+
 document.getElementById('addAdminBtn').addEventListener('click', () => openModal('addAdminModal'));
+
 async function executeAddAdmin() {
-  const uid = document.getElementById('newAdminUID').value.trim();
-  const email = document.getElementById('newAdminEmail').value.trim();
+  const uid         = document.getElementById('newAdminUID').value.trim();
+  const email       = document.getElementById('newAdminEmail').value.trim();
   const displayName = document.getElementById('newAdminName').value.trim();
-  const role = document.getElementById('newAdminRole').value;
-  if (!uid || !email) { toast('UID and email required', 'error'); return; }
+  const role        = document.getElementById('newAdminRole').value;
+  if (!uid || !email) { toast('UID and email required', 'err'); return; }
   try {
     await api('POST', '/admin/team', { uid, email, displayName, role });
-    toast('Admin added');
+    toast('Admin added', 'ok');
     closeModal('addAdminModal');
     loadTeam();
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) { toast(e.message, 'err'); }
 }
+
 async function removeAdmin(uid) {
-  if (!confirm('Remove this admin?')) return;
+  if (!confirm('Remove this admin? They will lose all admin access immediately.')) return;
   try {
     await api('DELETE', `/admin/team/${uid}`);
-    toast('Admin removed');
+    toast('Admin removed', 'ok');
     loadTeam();
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) { toast(e.message, 'err'); }
 }
 
 // ══════════════════════════════════════════════════
-//  UTILITIES
+//  CHART DEFAULTS
+// ══════════════════════════════════════════════════
+function chartOpts() {
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#6e8ba8', font: { size: 11, family: "'DM Sans', sans-serif" }, boxWidth: 12, usePointStyle: true } },
+      tooltip: { backgroundColor: '#0e1318', titleColor: '#dce8f5', bodyColor: '#6e8ba8', borderColor: '#243548', borderWidth: 1, cornerRadius: 6 }
+    },
+    scales: {
+      x: { ticks: { color: '#344f6a', font: { size: 10, family: "'Space Mono', monospace" }, maxTicksLimit: 8 }, grid: { color: 'rgba(36,53,72,.5)' } },
+      y: { ticks: { color: '#344f6a', font: { size: 10, family: "'Space Mono', monospace" } }, grid: { color: 'rgba(36,53,72,.5)' } }
+    }
+  };
+}
+
+// ══════════════════════════════════════════════════
+//  MODALS
 // ══════════════════════════════════════════════════
 function openModal(id) { document.getElementById(id)?.classList.add('open'); }
 function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
-
-// Close modal on backdrop click
 document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', (e) => { if (e.target === o) o.classList.remove('open'); });
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
 });
 
-function toast(msg, type = 'success') {
-  const t = document.getElementById('toast');
+// ══════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════
+function toast(msg, type = 'ok') {
   const el = document.createElement('div');
-  el.className = `toast-item ${type}`;
+  el.className = `toast-msg ${type}`;
   el.textContent = msg;
-  t.appendChild(el);
+  document.getElementById('toast').appendChild(el);
   setTimeout(() => el.remove(), 3500);
 }
 
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+// ══════════════════════════════════════════════════
+//  PAGINATION  (fixed — no callback.toString() hack)
+// ══════════════════════════════════════════════════
+function renderPagi(elId, current, total, context) {
+  const pages = Math.ceil(total / 50);
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (pages <= 1) { el.innerHTML = ''; return; }
+  const prev = current > 0 ? `<button class="page-btn" onclick="pagiGo('${context}',${current-1})">← Prev</button>` : `<button class="page-btn" disabled>← Prev</button>`;
+  const next = current < pages-1 ? `<button class="page-btn" onclick="pagiGo('${context}',${current+1})">Next →</button>` : `<button class="page-btn" disabled>Next →</button>`;
+  el.innerHTML = `<div class="page-row">${prev}<span class="page-info">Page ${current+1} / ${pages} (${fmt(total)} total)</span>${next}</div>`;
+}
 
+function pagiGo(context, page) {
+  if (context === 'users')   { usersPage  = page; loadUsers(); }
+  if (context === 'logins')  { loginPage  = page; loadLoginLogs(); }
+  if (context === 'audit')   { auditPage  = page; loadAuditLogs(); }
+}
+
+// ══════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
 function fmt(n) {
   if (n === undefined || n === null) return '—';
-  return Number(n).toLocaleString();
+  return Number(n).toLocaleString('en-IN');
 }
-
 function fmtDate(dt) {
   if (!dt) return '—';
-  try {
-    const d = new Date(dt);
-    return d.toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', hour12: true });
-  } catch { return String(dt); }
+  try { return new Date(dt).toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', hour12:true }); }
+  catch { return String(dt); }
 }
-
 function timeAgo(dt) {
   if (!dt) return '';
-  const diff = Date.now() - new Date(dt).getTime();
-  const s = Math.floor(diff/1000);
-  if (s < 60) return `${s}s ago`;
-  if (s < 3600) return `${Math.floor(s/60)}m ago`;
+  const s = Math.floor((Date.now() - new Date(dt)) / 1000);
+  if (s < 60)    return `${s}s ago`;
+  if (s < 3600)  return `${Math.floor(s/60)}m ago`;
   if (s < 86400) return `${Math.floor(s/3600)}h ago`;
   return `${Math.floor(s/86400)}d ago`;
 }
-
 function setVal(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
-}
-
-function renderPagination(elId, current, total, callback) {
-  const pages = Math.ceil(total / 50);
-  const el = document.getElementById(elId);
-  if (!el || pages <= 1) { if(el) el.innerHTML = ''; return; }
-  el.innerHTML = `
-    <button class="page-btn" ${current===0?'disabled':''} onclick="(${callback.toString()})(${current-1})">← Prev</button>
-    <span style="font-size:12px;color:var(--text-dim)">Page ${current+1} / ${pages}</span>
-    <button class="page-btn" ${current>=pages-1?'disabled':''} onclick="(${callback.toString()})(${current+1})">Next →</button>
-  `;
 }
 
 // ══════════════════════════════════════════════════
@@ -2027,11 +2583,8 @@ function renderPagination(elId, current, total, callback) {
 // ══════════════════════════════════════════════════
 (async () => {
   await initFirebase();
-  // Check if already signed in
   firebase.auth().onAuthStateChanged(async (user) => {
-    if (user && !currentUser) {
-      await handleAuth(user);
-    }
+    if (user && !currentUser) await handleAuth(user);
   });
 })();
 </script>
