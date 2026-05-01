@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduChat Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Firebase compat SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN SYSTEM — Dark Command Center
+═══════════════════════════════════════════ */
+:root {
+  --bg-void:    #080a0f;
+  --bg-base:    #0d1117;
+  --bg-card:    #111620;
+  --bg-raised:  #161d2c;
+  --bg-hover:   #1c2539;
+  --bg-active:  #1e2b42;
+  --border:     #1e2a3a;
+  --border-lit: #2a3d58;
+  --text-prime: #e8edf5;
+  --text-dim:   #7a8fa8;
+  --text-faint: #3d5068;
+  --accent:     #3b82f6;
+  --accent-lit: #60a5fa;
+  --accent-dim: #1d3f6e;
+  --green:      #10b981;
+  --green-dim:  #0a2e22;
+  --red:        #ef4444;
+  --red-dim:    #2d1010;
+  --amber:      #f59e0b;
+  --amber-dim:  #2d2010;
+  --purple:     #8b5cf6;
+  --purple-dim: #1e1030;
+  --cyan:       #06b6d4;
+  --cyan-dim:   #062030;
+  --font-sans:  'Syne', sans-serif;
+  --font-mono:  'JetBrains Mono', monospace;
+  --radius:     8px;
+  --radius-lg:  12px;
+  --sidebar-w:  220px;
+  --header-h:   56px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg-void);
+  color: var(--text-prime);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  overflow: hidden;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-lit); border-radius: 4px; }
+
+/* ════════════════════════════════
+   LOGIN SCREEN
+════════════════════════════════ */
+#loginScreen {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-void);
+  z-index: 9999;
+}
+.login-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-lit);
+  border-radius: var(--radius-lg);
+  padding: 40px 36px;
+  width: 360px;
+  text-align: center;
+}
+.login-logo {
+  font-size: 28px; font-weight: 800; color: var(--accent-lit);
+  letter-spacing: -1px; margin-bottom: 6px;
+}
+.login-sub { color: var(--text-dim); font-size: 13px; margin-bottom: 32px; }
+.login-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 12px 20px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius);
+  font-family: var(--font-sans); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background .15s;
+}
+.login-btn:hover { background: var(--accent-lit); }
+.login-btn svg { flex-shrink: 0; }
+.login-err { color: var(--red); font-size: 13px; margin-top: 12px; min-height: 20px; }
+
+/* ════════════════════════════════
+   LAYOUT
+════════════════════════════════ */
+#app { display: flex; height: 100vh; opacity: 0; transition: opacity .3s; }
+#app.visible { opacity: 1; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg-base);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+.sidebar-brand {
+  padding: 16px;
+  font-size: 18px; font-weight: 800; color: var(--accent-lit);
+  letter-spacing: -0.5px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sidebar-brand span { color: var(--text-dim); font-weight: 400; font-size: 12px; display: block; }
+.sidebar-nav { padding: 8px; flex: 1; }
+.nav-section { font-size: 10px; font-weight: 600; color: var(--text-faint); letter-spacing: 1px; text-transform: uppercase; padding: 14px 8px 6px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px; border-radius: var(--radius);
+  cursor: pointer; color: var(--text-dim);
+  font-size: 13px; font-weight: 500;
+  transition: all .15s;
+  position: relative;
+}
+.nav-item:hover { background: var(--bg-hover); color: var(--text-prime); }
+.nav-item.active { background: var(--accent-dim); color: var(--accent-lit); }
+.nav-item .badge {
+  margin-left: auto;
+  background: var(--red); color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 1px 6px; border-radius: 999px;
+  min-width: 18px; text-align: center;
+}
+.nav-item svg { flex-shrink: 0; opacity: .7; }
+.nav-item.active svg { opacity: 1; }
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+}
+.admin-tag {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px; border-radius: var(--radius);
+  background: var(--bg-raised);
+}
+.admin-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--accent-dim); color: var(--accent-lit);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px;
+}
+.admin-name { font-size: 12px; font-weight: 600; color: var(--text-prime); }
+.admin-role { font-size: 10px; color: var(--text-dim); text-transform: capitalize; }
+.logout-btn {
+  margin-left: auto; background: none; border: none;
+  color: var(--text-faint); cursor: pointer; padding: 4px;
+  border-radius: 4px;
+}
+.logout-btn:hover { color: var(--red); }
+
+/* ── Main ── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── Header ── */
+.header {
+  height: var(--header-h);
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px;
+  flex-shrink: 0; gap: 12px;
+}
+.header-title { font-size: 16px; font-weight: 700; color: var(--text-prime); }
+.header-sub { font-size: 12px; color: var(--text-dim); margin-left: 4px; }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ── Content ── */
+.content { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* ════════════════════════════════
+   PANELS (pages)
+════════════════════════════════ */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ════════════════════════════════
+   CARDS & STATS
+════════════════════════════════ */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px; margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  position: relative; overflow: hidden;
+  transition: border-color .2s;
+}
+.stat-card:hover { border-color: var(--border-lit); }
+.stat-label { font-size: 11px; color: var(--text-dim); font-weight: 500; letter-spacing: .3px; }
+.stat-value { font-size: 28px; font-weight: 800; color: var(--text-prime); margin: 6px 0 2px; line-height: 1; font-family: var(--font-mono); }
+.stat-change { font-size: 11px; color: var(--text-dim); }
+.stat-change.up { color: var(--green); }
+.stat-change.down { color: var(--red); }
+.stat-icon {
+  position: absolute; right: 14px; top: 14px;
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.card-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-title { font-size: 13px; font-weight: 700; color: var(--text-prime); }
+.card-body { padding: 16px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+/* ════════════════════════════════
+   TABLE
+════════════════════════════════ */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; padding: 10px 14px;
+  font-size: 11px; font-weight: 600;
+  color: var(--text-dim); letter-spacing: .5px; text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+td {
+  padding: 11px 14px;
+  font-size: 13px; color: var(--text-prime);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg-hover); }
+.td-mono { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); }
+
+/* ════════════════════════════════
+   BADGES / PILLS
+════════════════════════════════ */
+.pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+}
+.pill-green  { background: var(--green-dim);  color: var(--green); }
+.pill-red    { background: var(--red-dim);    color: var(--red); }
+.pill-amber  { background: var(--amber-dim);  color: var(--amber); }
+.pill-blue   { background: var(--accent-dim); color: var(--accent-lit); }
+.pill-purple { background: var(--purple-dim); color: var(--purple); }
+.pill-cyan   { background: var(--cyan-dim);   color: var(--cyan); }
+.pill-gray   { background: var(--bg-raised);  color: var(--text-dim); }
+
+/* ════════════════════════════════
+   BUTTONS
+════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--radius);
+  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  cursor: pointer; border: none; transition: all .15s;
+}
+.btn-primary   { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-lit); }
+.btn-danger    { background: var(--red-dim); color: var(--red); border: 1px solid #3d1010; }
+.btn-danger:hover { background: var(--red); color: #fff; }
+.btn-ghost     { background: var(--bg-raised); color: var(--text-dim); border: 1px solid var(--border); }
+.btn-ghost:hover { color: var(--text-prime); border-color: var(--border-lit); }
+.btn-success   { background: var(--green-dim); color: var(--green); border: 1px solid #0a3020; }
+.btn-success:hover { background: var(--green); color: #fff; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ════════════════════════════════
+   FORM INPUTS
+════════════════════════════════ */
+.input {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-prime);
+  font-family: var(--font-sans); font-size: 13px;
+  padding: 8px 12px; width: 100%;
+  outline: none; transition: border-color .15s;
+}
+.input:focus { border-color: var(--accent); }
+.input::placeholder { color: var(--text-faint); }
+.input-label { font-size: 12px; color: var(--text-dim); font-weight: 600; margin-bottom: 6px; display: block; }
+.input-group { margin-bottom: 14px; }
+select.input { cursor: pointer; }
+textarea.input { resize: vertical; min-height: 80px; }
+
+.search-bar {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 12px;
+  flex: 1;
+}
+.search-bar input {
+  background: none; border: none; outline: none;
+  color: var(--text-prime); font-family: var(--font-sans); font-size: 13px;
+  padding: 8px 0; width: 100%;
+}
+.search-bar input::placeholder { color: var(--text-faint); }
+
+/* ════════════════════════════════
+   TOOLBAR
+════════════════════════════════ */
+.toolbar {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+
+/* ════════════════════════════════
+   TOGGLE
+════════════════════════════════ */
+.toggle-wrap { display: flex; align-items: center; gap: 8px; }
+.toggle {
+  position: relative;
+  width: 40px; height: 22px;
+  flex-shrink: 0;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-lit);
+  border-radius: 999px; cursor: pointer;
+  transition: background .2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  left: 2px; top: 50%; transform: translateY(-50%);
+  width: 16px; height: 16px;
+  background: var(--text-dim);
+  border-radius: 50%;
+  transition: all .2s;
+}
+.toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
+.toggle input:checked + .toggle-slider::before { left: 20px; background: #fff; }
+
+/* ════════════════════════════════
+   MODAL
+════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,.7);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-lit);
+  border-radius: var(--radius-lg);
+  width: 480px; max-width: 96vw; max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(16px) scale(.97);
+  transition: transform .2s;
+}
+.modal-overlay.open .modal { transform: none; }
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: 15px; font-weight: 700; }
+.modal-close {
+  background: none; border: none; color: var(--text-dim);
+  cursor: pointer; font-size: 20px; line-height: 1; padding: 2px 6px;
+}
+.modal-close:hover { color: var(--text-prime); }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ════════════════════════════════
+   ALERT BANNER
+════════════════════════════════ */
+.alert-banner {
+  padding: 10px 14px; border-radius: var(--radius);
+  font-size: 13px; margin-bottom: 14px;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.alert-banner.info    { background: var(--accent-dim); color: var(--accent-lit); border: 1px solid #1d3f6e; }
+.alert-banner.success { background: var(--green-dim);  color: var(--green); border: 1px solid #0a3020; }
+.alert-banner.warn    { background: var(--amber-dim);  color: var(--amber); border: 1px solid #3d3010; }
+.alert-banner.error   { background: var(--red-dim);    color: var(--red);   border: 1px solid #3d1010; }
+
+/* ════════════════════════════════
+   CHART CONTAINERS
+════════════════════════════════ */
+.chart-wrap { position: relative; height: 220px; }
+
+/* ════════════════════════════════
+   TOAST
+════════════════════════════════ */
+#toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.toast-item {
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  font-size: 13px; font-weight: 500;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-lit);
+  color: var(--text-prime);
+  animation: slideIn .25s ease forwards;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+}
+.toast-item.success { border-color: var(--green); color: var(--green); }
+.toast-item.error   { border-color: var(--red);   color: var(--red); }
+@keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ════════════════════════════════
+   LOADING / SKELETON
+════════════════════════════════ */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-raised) 25%, var(--bg-hover) 50%, var(--bg-raised) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.loading-row td { padding: 14px; }
+
+/* ════════════════════════════════
+   USER PROFILE MODAL SPECIAL
+════════════════════════════════ */
+.user-profile-hero {
+  display: flex; gap: 16px; align-items: flex-start;
+  margin-bottom: 20px; padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.user-ava-lg {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--accent-dim); color: var(--accent-lit);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 800; flex-shrink: 0;
+  border: 2px solid var(--border-lit);
+}
+.user-ava-lg img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.user-info-main h2 { font-size: 18px; font-weight: 700; }
+.user-info-main p { color: var(--text-dim); font-size: 13px; margin-top: 2px; }
+.user-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.user-meta-item { background: var(--bg-raised); border-radius: var(--radius); padding: 10px 12px; }
+.user-meta-item .label { font-size: 11px; color: var(--text-dim); font-weight: 600; }
+.user-meta-item .value { font-size: 13px; color: var(--text-prime); margin-top: 2px; font-family: var(--font-mono); }
+.action-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+
+/* ════════════════════════════════
+   FLAG CARD
+════════════════════════════════ */
+.flag-card {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 8px;
+}
+.flag-info .name { font-size: 13px; font-weight: 600; }
+.flag-info .desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+/* ════════════════════════════════
+   TIMELINE
+════════════════════════════════ */
+.timeline { list-style: none; }
+.timeline li {
+  display: flex; gap: 12px;
+  padding-bottom: 16px; position: relative;
+}
+.timeline li::before {
+  content: '';
+  position: absolute; left: 6px; top: 18px;
+  bottom: 0; width: 1px; background: var(--border);
+}
+.timeline li:last-child::before { display: none; }
+.tl-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--accent-dim); border: 2px solid var(--accent);
+  flex-shrink: 0; margin-top: 2px;
+}
+.tl-content .tl-action { font-size: 13px; font-weight: 600; }
+.tl-content .tl-time { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+/* ════════════════════════════════
+   OVERVIEW PAGE LIVE FEED
+════════════════════════════════ */
+.live-feed { max-height: 280px; overflow-y: auto; }
+.feed-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.feed-item:last-child { border-bottom: none; }
+.feed-type {
+  padding: 2px 7px; border-radius: 4px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  flex-shrink: 0; margin-top: 1px;
+}
+.feed-time { color: var(--text-faint); font-family: var(--font-mono); font-size: 11px; margin-top: 1px; }
+
+/* ════════════════════════════════
+   BROADCAST PAGE
+════════════════════════════════ */
+.channel-picker { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.channel-opt {
+  padding: 8px 14px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--bg-raised);
+  cursor: pointer; font-size: 13px; font-weight: 500;
+  color: var(--text-dim); transition: all .15s; display: flex; align-items: center; gap: 6px;
+}
+.channel-opt.selected { border-color: var(--accent); background: var(--accent-dim); color: var(--accent-lit); }
+
+/* ════════════════════════════════
+   PAGINATION
+════════════════════════════════ */
+.pagination { display: flex; align-items: center; gap: 8px; padding: 12px 0; }
+.page-btn {
+  padding: 5px 10px; border-radius: 6px;
+  background: var(--bg-raised); border: 1px solid var(--border);
+  color: var(--text-dim); font-size: 12px; cursor: pointer;
+}
+.page-btn:hover { color: var(--text-prime); }
+.page-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent-lit); }
+
+/* ════════════════════════════════
+   RESPONSIVE
+════════════════════════════════ */
+@media (max-width: 900px) {
+  .sidebar { width: 180px; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ LOGIN SCREEN ════════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">EduChat</div>
+    <div class="login-sub">Admin Control Center</div>
+    <button class="login-btn" id="googleLoginBtn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Sign in with Google
+    </button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ════════════════ MAIN APP ════════════════ -->
+<div id="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">EduChat <span>Admin Dashboard</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Overview</div>
+      <div class="nav-item active" data-panel="overview">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Overview
+      </div>
+
+      <div class="nav-section">Management</div>
+      <div class="nav-item" data-panel="users">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Users
+      </div>
+      <div class="nav-item" data-panel="reports">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Reports
+        <span class="badge" id="reportsBadge" style="display:none">0</span>
+      </div>
+
+      <div class="nav-section">Analytics</div>
+      <div class="nav-item" data-panel="analytics">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Analytics
+      </div>
+
+      <div class="nav-section">Security</div>
+      <div class="nav-item" data-panel="security">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Security
+      </div>
+      <div class="nav-item" data-panel="sessions">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Sessions
+      </div>
+
+      <div class="nav-section">Comms</div>
+      <div class="nav-item" data-panel="broadcast">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 3h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 10c1.38 2.56 3.35 4.53 5.91 5.91l1.36-1.16a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Broadcast
+      </div>
+
+      <div class="nav-section">System</div>
+      <div class="nav-item" data-panel="flags">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        Feature Flags
+      </div>
+      <div class="nav-item" data-panel="audit">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Audit Log
+      </div>
+      <div class="nav-item" data-panel="team">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Admin Team
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="admin-tag">
+        <div class="admin-avatar" id="adminAvatarSidebar">A</div>
+        <div>
+          <div class="admin-name" id="adminNameSidebar">Admin</div>
+          <div class="admin-role" id="adminRoleSidebar">—</div>
+        </div>
+        <button class="logout-btn" id="logoutBtn" title="Sign out">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <span class="header-title" id="headerTitle">Overview</span>
+        <span class="header-sub" id="headerSub">Real-time dashboard</span>
+      </div>
+      <div class="header-right">
+        <div class="status-dot" title="Connected"></div>
+        <span style="font-size:11px;color:var(--text-dim)">Live</span>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- ══════════ OVERVIEW PANEL ══════════ -->
+      <div class="panel active" id="panel-overview">
+        <div class="stat-grid" id="overviewStats">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--accent-dim)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-lit)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            </div>
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value" id="s-totalUsers">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--green-dim)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="stat-label">Active Today</div>
+            <div class="stat-value" id="s-activeToday">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--cyan-dim)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
+            </div>
+            <div class="stat-label">Active Sessions</div>
+            <div class="stat-value" id="s-activeSessions">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--purple-dim)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="stat-label">Messages Today</div>
+            <div class="stat-value" id="s-messagesDay">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--red-dim)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+            </div>
+            <div class="stat-label">Banned Users</div>
+            <div class="stat-value" id="s-bannedUsers">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--amber-dim)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+            </div>
+            <div class="stat-label">Pending Reports</div>
+            <div class="stat-value" id="s-pendingReports">—</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:16px">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📡 Recent Activity Feed</span>
+              <button class="btn btn-ghost btn-sm" onclick="loadLoginLogs()">Refresh</button>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div class="live-feed" id="activityFeed">
+                <div style="padding:20px;text-align:center;color:var(--text-faint);font-size:13px">Loading...</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">💬 Messages (Today)</span></div>
+            <div class="card-body">
+              <div class="chart-wrap"><canvas id="chartMsgToday"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="maintenanceWarn" style="display:none" class="alert-banner warn">
+          ⚠️ <strong>Maintenance mode is ON.</strong> Users see a banner. Turn off in Feature Flags when done.
+        </div>
+      </div>
+
+      <!-- ══════════ USERS PANEL ══════════ -->
+      <div class="panel" id="panel-users">
+        <div class="toolbar">
+          <div class="search-bar" style="max-width:320px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-faint)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="userSearch" placeholder="Search name, email, UID…" oninput="debounceUserSearch()">
+          </div>
+          <select class="input" id="userFilter" style="width:auto" onchange="loadUsers()">
+            <option value="">All Users</option>
+            <option value="banned">Banned</option>
+            <option value="totp">TOTP On</option>
+            <option value="no_totp">TOTP Off</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadUsers()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+          <span style="color:var(--text-dim);font-size:12px;margin-left:auto" id="userCount"></span>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Last Seen</th>
+                  <th>Status</th>
+                  <th>TOTP</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersBody">
+                <tr class="loading-row"><td colspan="6"><div class="skeleton" style="height:14px;width:80%"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination" id="usersPagination" style="padding:12px 16px"></div>
+        </div>
+      </div>
+
+      <!-- ══════════ REPORTS PANEL ══════════ -->
+      <div class="panel" id="panel-reports">
+        <div class="toolbar">
+          <button class="btn btn-ghost btn-sm" onclick="loadReports()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Reporter</th><th>Target</th><th>Reason</th><th>Filed</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="reportsBody">
+                <tr class="loading-row"><td colspan="5"><div class="skeleton" style="height:14px;width:60%"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ ANALYTICS PANEL ══════════ -->
+      <div class="panel" id="panel-analytics">
+        <div class="grid-2" style="margin-bottom:16px">
+          <div class="card">
+            <div class="card-header"><span class="card-title">📈 Daily Active Users (30d)</span></div>
+            <div class="card-body"><div class="chart-wrap"><canvas id="chartDAU"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">💬 Messages per Day (30d)</span></div>
+            <div class="card-body"><div class="chart-wrap"><canvas id="chartMsgs"></canvas></div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header"><span class="card-title">⚡ Feature Usage (Last 30 days)</span></div>
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Date</th><th>Voice Calls</th><th>Video Calls</th><th>File Shares</th><th>AI Requests</th><th>Groups Created</th><th>Friend Adds</th></tr></thead>
+                <tbody id="featureStatsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ SECURITY PANEL ══════════ -->
+      <div class="panel" id="panel-security">
+        <div class="toolbar">
+          <label class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" id="suspiciousOnly" onchange="loadLoginLogs()">
+              <span class="toggle-slider"></span>
+            </label>
+            <span style="font-size:13px;color:var(--text-dim)">Suspicious only</span>
+          </label>
+          <button class="btn btn-ghost btn-sm" onclick="loadLoginLogs()">Refresh</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🔐 Login History</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>User</th><th>IP</th><th>Device</th><th>When</th><th>Flag</th></tr></thead>
+                <tbody id="loginLogsBody"></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="loginPagination" style="padding:12px 16px"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🚫 IP Blacklist</span>
+              <button class="btn btn-danger btn-sm" onclick="openBlacklistModal()">+ Add IP</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>IP Address</th><th>Reason</th><th>Added</th><th></th></tr></thead>
+                <tbody id="ipBlacklistBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ SESSIONS PANEL ══════════ -->
+      <div class="panel" id="panel-sessions">
+        <div class="toolbar">
+          <button class="btn btn-ghost btn-sm" onclick="loadSessions()">Refresh</button>
+          <span style="color:var(--text-dim);font-size:12px;margin-left:auto" id="sessionCount"></span>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>User</th><th>Device</th><th>IP</th><th>Last Active</th><th>Actions</th></tr></thead>
+              <tbody id="sessionsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ BROADCAST PANEL ══════════ -->
+      <div class="panel" id="panel-broadcast">
+        <div class="grid-2">
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header"><span class="card-title">📣 Send Broadcast</span></div>
+              <div class="card-body">
+                <div class="input-group">
+                  <label class="input-label">Title</label>
+                  <input type="text" class="input" id="broadcastTitle" placeholder="Announcement title…">
+                </div>
+                <div class="input-group">
+                  <label class="input-label">Message</label>
+                  <textarea class="input" id="broadcastMsg" placeholder="Write your message…" rows="4"></textarea>
+                </div>
+                <div class="input-group">
+                  <label class="input-label">Channel</label>
+                  <div class="channel-picker">
+                    <div class="channel-opt selected" data-ch="in_app" onclick="selectChannel(this)">📲 In-App</div>
+                    <div class="channel-opt" data-ch="email" onclick="selectChannel(this)">📧 Email</div>
+                    <div class="channel-opt" data-ch="all" onclick="selectChannel(this)">🔀 Both</div>
+                  </div>
+                </div>
+                <button class="btn btn-primary" onclick="sendBroadcast()" id="broadcastBtn">Send to All Users</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">📋 Broadcast History</span></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Title</th><th>Channel</th><th>Recipients</th><th>Sent</th></tr></thead>
+                <tbody id="broadcastHistory"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ FEATURE FLAGS PANEL ══════════ -->
+      <div class="panel" id="panel-flags">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🚩 Feature Flags</span>
+            <span style="font-size:12px;color:var(--text-dim)">Changes apply immediately</span>
+          </div>
+          <div class="card-body" id="flagsBody">
+            <div style="color:var(--text-faint);text-align:center;padding:20px">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ AUDIT LOG PANEL ══════════ -->
+      <div class="panel" id="panel-audit">
+        <div class="toolbar">
+          <button class="btn btn-ghost btn-sm" onclick="loadAuditLogs()">Refresh</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Admin</th><th>Action</th><th>Target</th><th>Details</th><th>IP</th><th>When</th></tr></thead>
+              <tbody id="auditBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="auditPagination" style="padding:12px 16px"></div>
+        </div>
+      </div>
+
+      <!-- ══════════ ADMIN TEAM PANEL ══════════ -->
+      <div class="panel" id="panel-team">
+        <div class="toolbar">
+          <button class="btn btn-primary btn-sm" id="addAdminBtn">+ Add Admin</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Admin</th><th>Email</th><th>Role</th><th>Added</th><th>Last Active</th><th></th></tr></thead>
+              <tbody id="teamBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<div id="toast"></div>
+
+<!-- ════════════════ USER DETAIL MODAL ════════════════ -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal" style="width:600px">
+    <div class="modal-header">
+      <span class="modal-title">User Profile</span>
+      <button class="modal-close" onclick="closeModal('userModal')">&times;</button>
+    </div>
+    <div class="modal-body" id="userModalBody">Loading…</div>
+  </div>
+</div>
+
+<!-- ════════════════ BAN MODAL ════════════════ -->
+<div class="modal-overlay" id="banModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Ban User</span>
+      <button class="modal-close" onclick="closeModal('banModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="input-group">
+        <label class="input-label">Reason</label>
+        <input type="text" class="input" id="banReason" placeholder="Reason for ban…">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Expires (leave blank = permanent)</label>
+        <input type="datetime-local" class="input" id="banExpiry">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('banModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="executeBan()">Ban User</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ ALERT MODAL ════════════════ -->
+<div class="modal-overlay" id="alertModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Send In-App Alert</span>
+      <button class="modal-close" onclick="closeModal('alertModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="input-group">
+        <label class="input-label">Title</label>
+        <input type="text" class="input" id="alertTitle" placeholder="Alert title…">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Message</label>
+        <textarea class="input" id="alertMsg" rows="3" placeholder="Alert message…"></textarea>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Type</label>
+        <select class="input" id="alertType">
+          <option value="info">ℹ️ Info</option>
+          <option value="warning">⚠️ Warning</option>
+          <option value="critical">🚨 Critical</option>
+          <option value="update">🔄 Update</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('alertModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="executeAlert()">Send Alert</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ EMAIL MODAL ════════════════ -->
+<div class="modal-overlay" id="emailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Send Email</span>
+      <button class="modal-close" onclick="closeModal('emailModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="input-group">
+        <label class="input-label">Subject</label>
+        <input type="text" class="input" id="emailSubject" placeholder="Subject…">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Message (HTML allowed)</label>
+        <textarea class="input" id="emailBody" rows="5" placeholder="Email body…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('emailModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="executeEmail()">Send Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ BLACKLIST MODAL ════════════════ -->
+<div class="modal-overlay" id="blacklistModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Block IP Address</span>
+      <button class="modal-close" onclick="closeModal('blacklistModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="input-group">
+        <label class="input-label">IP Address</label>
+        <input type="text" class="input" id="blacklistIP" placeholder="e.g. 1.2.3.4">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Reason</label>
+        <input type="text" class="input" id="blacklistReason" placeholder="Why is this IP blocked?">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('blacklistModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="executeBlacklist()">Block IP</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ ADD ADMIN MODAL ════════════════ -->
+<div class="modal-overlay" id="addAdminModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Admin</span>
+      <button class="modal-close" onclick="closeModal('addAdminModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="input-group">
+        <label class="input-label">Firebase UID</label>
+        <input type="text" class="input" id="newAdminUID" placeholder="Firebase UID">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Email</label>
+        <input type="email" class="input" id="newAdminEmail" placeholder="admin@example.com">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Display Name</label>
+        <input type="text" class="input" id="newAdminName" placeholder="Name">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Role</label>
+        <select class="input" id="newAdminRole">
+          <option value="moderator">Moderator</option>
+          <option value="super_admin">Super Admin</option>
+          <option value="viewer">Viewer</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addAdminModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="executeAddAdmin()">Add Admin</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  CONFIGURATION — Update these with your values
+// ══════════════════════════════════════════════════
+const CONFIG = {
+  serverUrl: 'https://chat-app-0zbh.onrender.com',
+  firebase: null
+};
+
+// ══════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════
+let currentUser = null;
+let adminRole   = null;
+let authToken   = null;
+let usersPage   = 0;
+let userTotal   = 0;
+let loginPage   = 0;
+let auditPage   = 0;
+let pendingBanUID = null;
+let pendingAlertUID = null;
+let pendingEmailUID = null;
+let selectedChannel = 'in_app';
+let charts = {};
+let userSearchTimer = null;
+
+// ══════════════════════════════════════════════════
+//  FIREBASE INIT
+// ══════════════════════════════════════════════════
+async function initFirebase() {
+  try {
+    const res = await fetch(`${CONFIG.serverUrl}/firebase-config`);
+    if (!res.ok) throw new Error('Config fetch failed');
+    const cfg = await res.json();
+    if (!firebase.apps.length) firebase.initializeApp(cfg);
+    else firebase.app();
+    CONFIG.firebase = cfg;
+  } catch (e) {
+    // Fallback: if /firebase-config not available, show error
+    document.getElementById('loginErr').textContent = 'Cannot reach server. Is it running?';
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════════
+document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('googleLoginBtn');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await firebase.auth().signInWithPopup(provider);
+    await handleAuth(result.user);
+  } catch (e) {
+    document.getElementById('loginErr').textContent = e.message;
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> Sign in with Google`;
+  }
+});
+
+async function handleAuth(user) {
+  const token = await user.getIdToken();
+  // Verify admin role via server
+  const res = await fetch(`${CONFIG.serverUrl}/admin/stats/overview`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (res.status === 401 || res.status === 403) {
+    await firebase.auth().signOut();
+    document.getElementById('loginErr').textContent = 'Access denied. You are not an admin.';
+    document.getElementById('googleLoginBtn').disabled = false;
+    document.getElementById('googleLoginBtn').innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> Sign in with Google`;
+    return;
+  }
+  authToken = token;
+  currentUser = user;
+  // Get role from /admin/team or cache
+  try {
+    const data = await res.json();
+    // Try to get role from team
+    const teamRes = await api('GET', '/admin/team');
+    const me = teamRes?.find(a => a.uid === user.uid);
+    adminRole = me?.role || 'moderator';
+  } catch(e) {}
+
+  // Update sidebar
+  const initial = (user.displayName || user.email || 'A').charAt(0).toUpperCase();
+  document.getElementById('adminAvatarSidebar').textContent = initial;
+  document.getElementById('adminNameSidebar').textContent = user.displayName || user.email || 'Admin';
+  document.getElementById('adminRoleSidebar').textContent = adminRole || 'Admin';
+
+  // Show app
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+
+  // Load initial data
+  refreshToken();
+  setInterval(refreshToken, 55 * 60 * 1000); // refresh token every 55 min
+  loadPanel('overview');
+}
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await firebase.auth().signOut();
+  location.reload();
+});
+
+async function refreshToken() {
+  if (!currentUser) return;
+  authToken = await currentUser.getIdToken(true);
+}
+
+// ══════════════════════════════════════════════════
+//  API HELPER
+// ══════════════════════════════════════════════════
+async function api(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(`${CONFIG.serverUrl}${path}`, opts);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+// ══════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════
+const PANEL_META = {
+  overview:  { title: 'Overview',       sub: 'Real-time dashboard' },
+  users:     { title: 'User Management', sub: 'Manage all registered users' },
+  reports:   { title: 'Reports Queue',   sub: 'Review user-filed reports' },
+  analytics: { title: 'Analytics',       sub: 'Usage & engagement data' },
+  security:  { title: 'Security',        sub: 'Login logs & threat detection' },
+  sessions:  { title: 'Active Sessions', sub: 'Live device sessions' },
+  broadcast: { title: 'Broadcast',       sub: 'Send messages to all users' },
+  flags:     { title: 'Feature Flags',   sub: 'Enable / disable app features' },
+  audit:     { title: 'Audit Log',       sub: 'Immutable admin action history' },
+  team:      { title: 'Admin Team',      sub: 'Manage admins & roles' },
+};
+
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const panel = item.dataset.panel;
+    if (!panel) return;
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    loadPanel(panel);
+  });
+});
+
+function loadPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-${name}`)?.classList.add('active');
+  const meta = PANEL_META[name] || {};
+  document.getElementById('headerTitle').textContent = meta.title || name;
+  document.getElementById('headerSub').textContent   = meta.sub || '';
+  // Lazy load data
+  if (name === 'overview')  loadOverview();
+  if (name === 'users')     loadUsers();
+  if (name === 'reports')   loadReports();
+  if (name === 'analytics') loadAnalytics();
+  if (name === 'security')  { loadLoginLogs(); loadIPBlacklist(); }
+  if (name === 'sessions')  loadSessions();
+  if (name === 'broadcast') loadBroadcastHistory();
+  if (name === 'flags')     loadFlags();
+  if (name === 'audit')     loadAuditLogs();
+  if (name === 'team')      loadTeam();
+}
+
+// ══════════════════════════════════════════════════
+//  OVERVIEW
+// ══════════════════════════════════════════════════
+async function loadOverview() {
+  try {
+    const data = await api('GET', '/admin/stats/overview');
+    setVal('s-totalUsers',    fmt(data.totalUsers));
+    setVal('s-activeToday',   fmt(data.activeToday));
+    setVal('s-activeSessions',fmt(data.activeSessions));
+    setVal('s-messagesDay',   fmt(data.messagesToday));
+    setVal('s-bannedUsers',   fmt(data.bannedUsers));
+    setVal('s-pendingReports',fmt(data.pendingReports));
+
+    if (data.pendingReports > 0) {
+      const badge = document.getElementById('reportsBadge');
+      badge.textContent = data.pendingReports;
+      badge.style.display = '';
+    }
+
+    document.getElementById('maintenanceWarn').style.display = data.maintenanceMode ? '' : 'none';
+
+    // Today's messages chart (by hour)
+    const msgData = await api('GET', '/admin/stats/messages');
+    renderMsgTodayChart(msgData);
+  } catch(e) { toast(e.message, 'error'); }
+
+  // Activity feed
+  loadActivityFeed();
+}
+
+async function loadActivityFeed() {
+  try {
+    const data = await api('GET', '/admin/security/login-logs?page=0');
+    const logs = data.logs?.slice(0, 12) || [];
+    const feed = document.getElementById('activityFeed');
+    if (!logs.length) { feed.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-faint);font-size:13px">No recent activity</div>'; return; }
+    feed.innerHTML = logs.map(l => `
+      <div class="feed-item">
+        <span class="feed-type ${l.is_suspicious ? 'pill-amber' : 'pill-green'}" style="font-size:10px;padding:2px 6px;border-radius:4px;flex-shrink:0">
+          ${l.is_suspicious ? '⚠️ SUSP' : '✓ LOGIN'}
+        </span>
+        <div style="flex:1;min-width:0">
+          <div style="color:var(--text-prime);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.email || l.uid}</div>
+          <div style="color:var(--text-faint);font-size:11px">${l.browser||''} ${l.os||''} · ${l.ip_address||''}</div>
+        </div>
+        <div class="feed-time">${timeAgo(l.created_at)}</div>
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+
+function renderMsgTodayChart(data) {
+  const today = new Date().toISOString().split('T')[0];
+  const todayRows = data.filter ? data : [];
+  const hourCounts = Array(24).fill(0);
+  // data is daily aggregated — show total as single bar if no hourly detail
+  const ctx = document.getElementById('chartMsgToday')?.getContext('2d');
+  if (!ctx) return;
+  if (charts.msgToday) charts.msgToday.destroy();
+  // Build last 7 days from daily data
+  const sorted = [...(data||[])].sort((a,b) => a.stat_date > b.stat_date ? 1 : -1).slice(-7);
+  charts.msgToday = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(d => d.stat_date?.slice(5) || ''),
+      datasets: [{
+        label: 'Messages',
+        data: sorted.map(d => d.total_messages || 0),
+        backgroundColor: 'rgba(59,130,246,.6)',
+        borderColor: '#3b82f6',
+        borderWidth: 1, borderRadius: 4,
+      }]
+    },
+    options: chartOpts('Messages (last 7 days)')
+  });
+}
+
+// ══════════════════════════════════════════════════
+//  ANALYTICS
+// ══════════════════════════════════════════════════
+async function loadAnalytics() {
+  try {
+    const [dauData, msgData, featureData] = await Promise.all([
+      api('GET', '/admin/stats/dau'),
+      api('GET', '/admin/stats/messages'),
+      api('GET', '/admin/stats/features'),
+    ]);
+    renderDAUChart(dauData);
+    renderMsgsChart(msgData);
+    renderFeatureTable(featureData);
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function renderDAUChart(data) {
+  const ctx = document.getElementById('chartDAU')?.getContext('2d');
+  if (!ctx) return;
+  if (charts.dau) charts.dau.destroy();
+  const sorted = [...(data||[])].sort((a,b) => a.active_date > b.active_date ? 1 : -1).slice(-30);
+  charts.dau = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: sorted.map(d => d.active_date?.slice(5)||''),
+      datasets: [{ label: 'DAU', data: sorted.map(d => d.user_count||0), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.1)', fill: true, tension: .4, pointRadius: 2 }]
+    },
+    options: chartOpts('Daily Active Users')
+  });
+}
+
+function renderMsgsChart(data) {
+  const ctx = document.getElementById('chartMsgs')?.getContext('2d');
+  if (!ctx) return;
+  if (charts.msgs) charts.msgs.destroy();
+  const sorted = [...(data||[])].sort((a,b) => a.stat_date > b.stat_date ? 1 : -1).slice(-30);
+  charts.msgs = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: sorted.map(d => d.stat_date?.slice(5)||''),
+      datasets: [
+        { label: 'Total', data: sorted.map(d => d.total_messages||0), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.1)', fill: true, tension: .4, pointRadius: 2 },
+        { label: 'Direct', data: sorted.map(d => d.direct_messages||0), borderColor: '#8b5cf6', backgroundColor: 'transparent', tension: .4, pointRadius: 2 },
+        { label: 'Group', data: sorted.map(d => d.group_messages||0), borderColor: '#06b6d4', backgroundColor: 'transparent', tension: .4, pointRadius: 2 },
+      ]
+    },
+    options: chartOpts('Messages per Day')
+  });
+}
+
+function renderFeatureTable(data) {
+  const tbody = document.getElementById('featureStatsBody');
+  if (!data?.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-faint)">No feature data yet</td></tr>'; return; }
+  tbody.innerHTML = data.slice(0,30).map(r => `
+    <tr>
+      <td class="td-mono">${r.stat_date||'—'}</td>
+      <td>${r.voice_calls||0}</td>
+      <td>${r.video_calls||0}</td>
+      <td>${r.file_shares||0}</td>
+      <td>${r.ai_requests||0}</td>
+      <td>${r.group_creates||0}</td>
+      <td>${r.friend_adds||0}</td>
+    </tr>
+  `).join('');
+}
+
+function chartOpts(title) {
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#7a8fa8', font: { size: 11 }, boxWidth: 12 } },
+      tooltip: { backgroundColor: '#111620', titleColor: '#e8edf5', bodyColor: '#7a8fa8', borderColor: '#1e2a3a', borderWidth: 1 }
+    },
+    scales: {
+      x: { ticks: { color: '#3d5068', font: { size: 10 }, maxTicksLimit: 10 }, grid: { color: '#1e2a3a' } },
+      y: { ticks: { color: '#3d5068', font: { size: 10 } }, grid: { color: '#1e2a3a' } }
+    }
+  };
+}
+
+// ══════════════════════════════════════════════════
+//  USERS
+// ══════════════════════════════════════════════════
+function debounceUserSearch() {
+  clearTimeout(userSearchTimer);
+  userSearchTimer = setTimeout(() => { usersPage = 0; loadUsers(); }, 350);
+}
+
+async function loadUsers() {
+  const search = document.getElementById('userSearch')?.value || '';
+  const filter = document.getElementById('userFilter')?.value || '';
+  const tbody = document.getElementById('usersBody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="6"><div class="skeleton" style="height:14px;width:70%"></div></td></tr>';
+  try {
+    const data = await api('GET', `/admin/users?page=${usersPage}&search=${encodeURIComponent(search)}&filter=${filter}`);
+    userTotal = data.total || 0;
+    document.getElementById('userCount').textContent = `${userTotal.toLocaleString()} users`;
+    if (!data.users?.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-faint);padding:24px">No users found</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.users.map(u => `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--accent-dim);color:var(--accent-lit);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">
+              ${(u.display_name||u.email||'?').charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div style="font-weight:600">${esc(u.display_name||'—')}</div>
+              <div style="font-size:11px;color:var(--text-faint);font-family:var(--font-mono)">${esc(u.uid?.slice(0,12))}…</div>
+            </div>
+          </div>
+        </td>
+        <td class="td-mono">${esc(u.email||'—')}</td>
+        <td class="td-mono" style="font-size:11px">${fmtDate(u.last_seen)}</td>
+        <td>${u.is_banned ? '<span class="pill pill-red">Banned</span>' : '<span class="pill pill-green">Active</span>'}</td>
+        <td>${u.totp_enabled ? '<span class="pill pill-blue">ON</span>' : '<span class="pill pill-gray">OFF</span>'}</td>
+        <td>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="openUserModal('${u.uid}')">View</button>
+            ${u.is_banned
+              ? `<button class="btn btn-success btn-sm" onclick="unbanUser('${u.uid}')">Unban</button>`
+              : `<button class="btn btn-danger btn-sm" onclick="openBanModal('${u.uid}')">Ban</button>`}
+          </div>
+        </td>
+      </tr>
+    `).join('');
+    renderUsersPagination(userTotal);
+  } catch(e) { toast(e.message, 'error'); tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);padding:16px">${e.message}</td></tr>`; }
+}
+
+function renderUsersPagination(total) {
+  const pages = Math.ceil(total / 50);
+  const pg = document.getElementById('usersPagination');
+  if (pages <= 1) { pg.innerHTML = ''; return; }
+  let html = `<button class="page-btn" ${usersPage===0?'disabled':''} onclick="usersPage--;loadUsers()">← Prev</button>`;
+  html += `<span style="font-size:12px;color:var(--text-dim)">Page ${usersPage+1} of ${pages}</span>`;
+  html += `<button class="page-btn" ${usersPage>=pages-1?'disabled':''} onclick="usersPage++;loadUsers()">Next →</button>`;
+  pg.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════
+//  USER MODAL (deep profile)
+// ══════════════════════════════════════════════════
+async function openUserModal(uid) {
+  openModal('userModal');
+  document.getElementById('userModalBody').innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-faint)">Loading…</div>';
+  try {
+    const d = await api('GET', `/admin/users/${uid}`);
+    const u = d.user;
+    const initial = (u.display_name||u.email||'?').charAt(0).toUpperCase();
+    document.getElementById('userModalBody').innerHTML = `
+      <div class="user-profile-hero">
+        <div class="user-ava-lg">${u.photo_url ? `<img src="${esc(u.photo_url)}" onerror="this.style.display='none'">` : ''}${initial}</div>
+        <div class="user-info-main">
+          <h2>${esc(u.display_name||'—')}</h2>
+          <p>${esc(u.email||'—')}</p>
+          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+            ${u.is_banned ? '<span class="pill pill-red">Banned</span>' : '<span class="pill pill-green">Active</span>'}
+            ${u.totp_enabled ? '<span class="pill pill-blue">TOTP On</span>' : '<span class="pill pill-gray">TOTP Off</span>'}
+          </div>
+        </div>
+      </div>
+
+      <div class="user-meta-grid">
+        <div class="user-meta-item"><div class="label">UID</div><div class="value">${esc(u.uid)}</div></div>
+        <div class="user-meta-item"><div class="label">Joined</div><div class="value">${fmtDate(u.created_at)}</div></div>
+        <div class="user-meta-item"><div class="label">Last Seen</div><div class="value">${fmtDate(u.last_seen)}</div></div>
+        <div class="user-meta-item"><div class="label">Friends / Groups</div><div class="value">${u.friend_count||0} / ${u.group_count||0}</div></div>
+        ${u.is_banned ? `<div class="user-meta-item" style="grid-column:1/-1"><div class="label">Ban Reason</div><div class="value" style="color:var(--red)">${esc(u.ban_reason||'—')}</div></div>` : ''}
+      </div>
+
+      <div class="action-bar">
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('userModal');openBanModal('${uid}')">🚫 Ban</button>
+        <button class="btn btn-success btn-sm" onclick="unbanUser('${uid}')">✓ Unban</button>
+        <button class="btn btn-ghost btn-sm" onclick="forceLogout('${uid}')">⏏ Force Logout</button>
+        <button class="btn btn-ghost btn-sm" onclick="resetTOTP('${uid}')">🔐 Reset TOTP</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('userModal');openAlertModal('${uid}')">🔔 Alert</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('userModal');openEmailModal('${uid}')">📧 Email</button>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:8px;font-size:12px;color:var(--text-dim)">RECENT SESSIONS (${d.sessions?.length||0})</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Device</th><th>IP</th><th>Last Active</th><th></th></tr></thead>
+            <tbody>
+              ${(d.sessions||[]).map(s => `
+                <tr>
+                  <td>${esc(s.device_name||'Unknown')}</td>
+                  <td class="td-mono">${esc(s.ip_address||'—')}</td>
+                  <td class="td-mono" style="font-size:11px">${fmtDate(s.last_active)}</td>
+                  <td><button class="btn btn-danger btn-sm" onclick="forceLogoutSession(${s.id})">Logout</button></td>
+                </tr>
+              `).join('') || '<tr><td colspan="4" style="color:var(--text-faint);padding:12px">No sessions</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      ${(d.notes||[]).length ? `
+      <div style="margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:8px;font-size:12px;color:var(--text-dim)">ADMIN NOTES</div>
+        ${d.notes.map(n => `<div style="background:var(--bg-raised);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12px">
+          <span style="color:var(--text-prime)">${esc(n.note)}</span>
+          <span style="color:var(--text-faint);float:right">${fmtDate(n.created_at)}</span>
+        </div>`).join('')}
+      </div>` : ''}
+
+      <div class="input-group" style="margin-top:12px">
+        <label class="input-label">Add Internal Note</label>
+        <div style="display:flex;gap:6px">
+          <input type="text" class="input" id="noteInput_${uid}" placeholder="Private note about this user…">
+          <button class="btn btn-ghost btn-sm" onclick="addNote('${uid}')">Save</button>
+        </div>
+      </div>
+    `;
+  } catch(e) { document.getElementById('userModalBody').innerHTML = `<div style="color:var(--red);padding:16px">${e.message}</div>`; }
+}
+
+async function addNote(uid) {
+  const note = document.getElementById(`noteInput_${uid}`)?.value?.trim();
+  if (!note) return;
+  try {
+    await api('POST', `/admin/users/${uid}/note`, { note });
+    toast('Note saved');
+    openUserModal(uid);
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════════
+//  BAN / UNBAN
+// ══════════════════════════════════════════════════
+function openBanModal(uid) { pendingBanUID = uid; openModal('banModal'); }
+async function executeBan() {
+  if (!pendingBanUID) return;
+  const reason = document.getElementById('banReason').value.trim() || 'Violation of terms';
+  const expiry = document.getElementById('banExpiry').value;
+  try {
+    await api('POST', `/admin/users/${pendingBanUID}/ban`, { reason, expiresAt: expiry || null });
+    toast('User banned');
+    closeModal('banModal');
+    loadUsers();
+  } catch(e) { toast(e.message, 'error'); }
+}
+async function unbanUser(uid) {
+  if (!confirm('Unban this user?')) return;
+  try {
+    await api('POST', `/admin/users/${uid}/unban`);
+    toast('User unbanned', 'success');
+    loadUsers();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════════
+//  FORCE LOGOUT / RESET TOTP
+// ══════════════════════════════════════════════════
+async function forceLogout(uid) {
+  if (!confirm('Force logout all devices for this user?')) return;
+  try {
+    await api('POST', `/admin/users/${uid}/force-logout`);
+    toast('Forced logout on all devices');
+  } catch(e) { toast(e.message, 'error'); }
+}
+async function forceLogoutSession(sessionId) {
+  try {
+    await api('POST', `/admin/sessions/${sessionId}/logout`);
+    toast('Session terminated');
+  } catch(e) { toast(e.message, 'error'); }
+}
+async function resetTOTP(uid) {
+  if (!confirm('Reset TOTP for this user? They will need to re-setup 2FA.')) return;
+  try {
+    await api('POST', `/admin/users/${uid}/reset-totp`);
+    toast('TOTP reset');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════════
+//  ALERT MODAL
+// ══════════════════════════════════════════════════
+function openAlertModal(uid) { pendingAlertUID = uid; openModal('alertModal'); }
+async function executeAlert() {
+  if (!pendingAlertUID) return;
+  const title = document.getElementById('alertTitle').value.trim();
+  const message = document.getElementById('alertMsg').value.trim();
+  const alertType = document.getElementById('alertType').value;
+  if (!title || !message) { toast('Title and message required', 'error'); return; }
+  try {
+    await api('POST', `/admin/users/${pendingAlertUID}/send-alert`, { title, message, alertType });
+    toast('Alert sent');
+    closeModal('alertModal');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════════
+//  EMAIL MODAL
+// ══════════════════════════════════════════════════
+function openEmailModal(uid) { pendingEmailUID = uid; openModal('emailModal'); }
+async function executeEmail() {
+  if (!pendingEmailUID) return;
+  const subject = document.getElementById('emailSubject').value.trim();
+  const body    = document.getElementById('emailBody').value.trim();
+  if (!subject || !body) { toast('Subject and body required', 'error'); return; }
+  try {
+    const result = await api('POST', `/admin/users/${pendingEmailUID}/send-email`, { subject, body });
+    toast(`Email sent to ${result.sentTo}`);
+    closeModal('emailModal');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════════
+//  REPORTS
+// ══════════════════════════════════════════════════
+async function loadReports() {
+  const tbody = document.getElementById('reportsBody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="5"><div class="skeleton" style="height:14px;width:60%"></div></td></tr>';
+  try {
+    const data = await api('GET', '/admin/reports');
+    if (!data?.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:24px">No pending reports 🎉</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(r => `
+      <tr>
+        <td>${esc(r.reporter_name||r.reporter_uid?.slice(0,8)||'?')}</td>
+        <td>
+          <div>${esc(r.target_name||r.target_uid?.slice(0,8)||'?')}</div>
+          ${r.target_is_banned ? '<span class="pill pill-red" style="font-size:10px">Banned</span>' : ''}
+        </td>
+        <td><span class="pill pill-amber">${esc(r.reason)}</span></td>
+        <td class="td-mono" style="font-size:11px">${fmtDate(r.created_at)}</td>
+        <td>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-danger btn-sm" onclick="reportAction(${r.id},'actioned')">Act</button>
+            <button class="btn btn-ghost btn-sm" onclick="reportAction(${r.id},'dismissed')">Dismiss</button>
+            <button class="btn btn-ghost btn-sm" onclick="openUserModal('${r.target_uid}')">Profile</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) { toast(e.message, 'error'); }
+}
+async function reportAction(id, action) {
+  try {
+    await api('POST', `/admin/reports/${id}/action`, { action });
+    toast(`Report ${action}`);
+    loadReports();
+    loadOverview();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════════
+//  SECURITY — LOGIN LOGS
+// ══════════════════════════════════════════════════
+async function loadLoginLogs() {
+  const susp = document.getElementById('suspiciousOnly')?.checked;
+  const tbody = document.getElementById('loginLogsBody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="5"><div class="skeleton" style="height:14px;width:70%"></div></td></tr>';
+  try {
+    const data = await api('GET', `/admin/security/login-logs?page=${loginPage}${susp?'&suspicious=true':''}`);
+    if (!data.logs?.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:16px">No logs</td></tr>'; return; }
+    tbody.innerHTML = data.logs.map(l => `
+      <tr>
+        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.email||l.uid?.slice(0,10)||'?')}</td>
+        <td class="td-mono">${esc(l.ip_address||'—')}</td>
+        <td style="font-size:12px">${esc(l.browser||'')} / ${esc(l.os||'')}</td>
+        <td class="td-mono" style="font-size:11px">${fmtDate(l.created_at)}</td>
+        <td>${l.is_suspicious ? '<span class="pill pill-amber">⚠ Suspicious</span>' : '<span class="pill pill-green">OK</span>'}</td>
+      </tr>
+    `).join('');
+    renderPagination('loginPagination', loginPage, data.total, (p) => { loginPage = p; loadLoginLogs(); });
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════════
+//  SECURITY — IP BLACKLIST
+// ══════════════════════════════════════════════════
+async function loadIPBlacklist() {
+  const tbody = document.getElementById('ipBlacklistBody');
+  try {
+    const data = await api('GET', '/admin/security/ip-blacklist');
+    if (!data?.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-faint);padding:16px">No blocked IPs</td></tr>'; return; }
+    tbody.innerHTML = data.map(ip => `
+      <tr>
+        <td class="td-mono">${esc(ip.ip_address)}</td>
+        <td style="font-size:12px">${esc(ip.reason||'—')}</td>
+        <td class="td-mono" style="font-size:11px">${fmtDate(ip.created_at)}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="removeIP('${esc(ip.ip_address)}')">Remove</button></td>
+      </tr>
+    `).join('');
+  } catch(e) {}
+}
+function openBlacklistModal() { openModal('blacklistModal'); }
+async function executeBlacklist() {
+  const ip = document.getElementById('blacklistIP').value.trim();
+  const reason = document.getElementById('blacklistReason').value.trim();
+  if (!ip) { toast('IP required', 'error'); return; }
+  try {
+    await api('POST', '/admin/security/ip-blacklist', { ipAddress: ip, reason });
+    toast('IP blocked');
+    closeModal('blacklistModal');
+    loadIPBlacklist();
+  } catch(e) { toast(e.message, 'error'); }
+}
+async function removeIP(ip) {
+  if (!confirm(`Remove ${ip} from blacklist?`)) return;
+  try {
+    await api('DELETE', `/admin/security/ip-blacklist/${encodeURIComponent(ip)}`);
+    toast('IP removed');
+    loadIPBlacklist();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════════
+//  SESSIONS
+// ══════════════════════════════════════════════════
+async function loadSessions() {
+  const tbody = document.getElementById('sessionsBody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="5"><div class="skeleton" style="height:14px;width:70%"></div></td></tr>';
+  try {
+    const data = await api('GET', '/admin/security/sessions');
+    document.getElementById('sessionCount').textContent = `${data?.length||0} active sessions`;
+    if (!data?.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:24px">No active sessions</td></tr>'; return; }
+    tbody.innerHTML = data.map(s => `
+      <tr>
+        <td>
+          <div style="font-weight:600">${esc(s.display_name||'Unknown')}</div>
+          <div class="td-mono" style="font-size:11px">${esc(s.email||s.uid?.slice(0,14)||'')}</div>
+        </td>
+        <td>${esc(s.device_name||'—')}</td>
+        <td class="td-mono">${esc(s.ip_address||'—')}</td>
+        <td class="td-mono" style="font-size:11px">${fmtDate(s.last_active)}</td>
+        <td>
+          <button class="btn btn-danger btn-sm" onclick="forceLogoutSession(${s.id})">Terminate</button>
+          <button class="btn btn-ghost btn-sm" onclick="openUserModal('${s.uid}')">Profile</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════════
+//  BROADCAST
+// ══════════════════════════════════════════════════
+function selectChannel(el) {
+  document.querySelectorAll('.channel-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedChannel = el.dataset.ch;
+}
+async function sendBroadcast() {
+  const title = document.getElementById('broadcastTitle').value.trim();
+  const msg = document.getElementById('broadcastMsg').value.trim();
+  if (!title || !msg) { toast('Title and message required', 'error'); return; }
+  if (!confirm(`Send broadcast to ALL users via ${selectedChannel}?`)) return;
+  const btn = document.getElementById('broadcastBtn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const result = await api('POST', '/admin/broadcast', { title, message: msg, channel: selectedChannel });
+    toast(`Sent to ${result.sent} users`);
+    document.getElementById('broadcastTitle').value = '';
+    document.getElementById('broadcastMsg').value = '';
+    loadBroadcastHistory();
+  } catch(e) { toast(e.message, 'error'); }
+  btn.disabled = false; btn.textContent = 'Send to All Users';
+}
+async function loadBroadcastHistory() {
+  // No dedicated endpoint — use audit logs filtered to broadcast
+  const tbody = document.getElementById('broadcastHistory');
+  try {
+    // Try fetching broadcasts from Supabase through audit logs
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-faint);padding:16px;font-size:12px">Broadcast history from audit log</td></tr>';
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════
+//  FEATURE FLAGS
+// ══════════════════════════════════════════════════
+async function loadFlags() {
+  const body = document.getElementById('flagsBody');
+  try {
+    const flags = await api('GET', '/admin/flags');
+    if (!flags?.length) { body.innerHTML = '<div style="color:var(--text-faint);text-align:center;padding:20px">No flags configured</div>'; return; }
+    body.innerHTML = flags.map(f => `
+      <div class="flag-card">
+        <div class="flag-info">
+          <div class="name">${esc(f.label||f.key)}</div>
+          <div class="desc">${esc(f.description||'')} <span class="td-mono" style="font-size:10px;color:var(--text-faint)">${f.key}</span></div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" ${f.value?'checked':''} onchange="toggleFlag('${f.key}', this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    `).join('');
+  } catch(e) { toast(e.message, 'error'); }
+}
+async function toggleFlag(key, value) {
+  try {
+    await api('PATCH', `/admin/flags/${key}`, { value });
+    toast(`${key} → ${value ? 'enabled' : 'disabled'}`);
+    if (key === 'maintenance_mode') loadOverview();
+  } catch(e) { toast(e.message, 'error'); loadFlags(); }
+}
+
+// ══════════════════════════════════════════════════
+//  AUDIT LOG
+// ══════════════════════════════════════════════════
+async function loadAuditLogs() {
+  const tbody = document.getElementById('auditBody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="6"><div class="skeleton" style="height:14px;width:70%"></div></td></tr>';
+  try {
+    const data = await api('GET', `/admin/audit-logs?page=${auditPage}`);
+    if (!data.logs?.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-faint);padding:24px">No audit entries</td></tr>'; return; }
+    const actionColor = { ban_user:'pill-red', unban_user:'pill-green', delete_user:'pill-red', force_logout_all:'pill-amber', send_alert:'pill-blue', broadcast:'pill-purple', toggle_flag:'pill-cyan', add_admin:'pill-blue', remove_admin:'pill-amber' };
+    tbody.innerHTML = data.logs.map(l => `
+      <tr>
+        <td style="font-size:12px">${esc(l.admin_email||l.admin_uid?.slice(0,12)||'?')}</td>
+        <td><span class="pill ${actionColor[l.action]||'pill-gray'}">${esc(l.action)}</span></td>
+        <td class="td-mono" style="font-size:11px">${esc(l.target_type||'')} ${esc(l.target_id?.slice(0,12)||'')}</td>
+        <td style="font-size:12px;color:var(--text-dim);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.details ? JSON.stringify(l.details).slice(0,80) : '—'}</td>
+        <td class="td-mono" style="font-size:11px">${esc(l.ip_address||'—')}</td>
+        <td class="td-mono" style="font-size:11px">${fmtDate(l.created_at)}</td>
+      </tr>
+    `).join('');
+    renderPagination('auditPagination', auditPage, data.total, (p) => { auditPage = p; loadAuditLogs(); });
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════════
+//  ADMIN TEAM
+// ══════════════════════════════════════════════════
+async function loadTeam() {
+  const tbody = document.getElementById('teamBody');
+  try {
+    const data = await api('GET', '/admin/team');
+    tbody.innerHTML = data.map(a => `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-dim);color:var(--accent-lit);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${(a.display_name||a.email||'?').charAt(0).toUpperCase()}</div>
+            <span style="font-weight:600">${esc(a.display_name||'—')}</span>
+          </div>
+        </td>
+        <td class="td-mono">${esc(a.email||'—')}</td>
+        <td><span class="pill ${a.role==='super_admin'?'pill-purple':a.role==='moderator'?'pill-blue':'pill-gray'}">${a.role}</span></td>
+        <td class="td-mono" style="font-size:11px">${fmtDate(a.created_at)}</td>
+        <td class="td-mono" style="font-size:11px">${fmtDate(a.last_active)||'—'}</td>
+        <td>${a.uid !== currentUser?.uid ? `<button class="btn btn-danger btn-sm" onclick="removeAdmin('${a.uid}')">Remove</button>` : '<span style="color:var(--text-faint);font-size:12px">You</span>'}</td>
+      </tr>
+    `).join('');
+  } catch(e) { toast(e.message, 'error'); }
+}
+document.getElementById('addAdminBtn').addEventListener('click', () => openModal('addAdminModal'));
+async function executeAddAdmin() {
+  const uid = document.getElementById('newAdminUID').value.trim();
+  const email = document.getElementById('newAdminEmail').value.trim();
+  const displayName = document.getElementById('newAdminName').value.trim();
+  const role = document.getElementById('newAdminRole').value;
+  if (!uid || !email) { toast('UID and email required', 'error'); return; }
+  try {
+    await api('POST', '/admin/team', { uid, email, displayName, role });
+    toast('Admin added');
+    closeModal('addAdminModal');
+    loadTeam();
+  } catch(e) { toast(e.message, 'error'); }
+}
+async function removeAdmin(uid) {
+  if (!confirm('Remove this admin?')) return;
+  try {
+    await api('DELETE', `/admin/team/${uid}`);
+    toast('Admin removed');
+    loadTeam();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════════
+//  UTILITIES
+// ══════════════════════════════════════════════════
+function openModal(id) { document.getElementById(id)?.classList.add('open'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
+
+// Close modal on backdrop click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', (e) => { if (e.target === o) o.classList.remove('open'); });
+});
+
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  const el = document.createElement('div');
+  el.className = `toast-item ${type}`;
+  el.textContent = msg;
+  t.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function fmt(n) {
+  if (n === undefined || n === null) return '—';
+  return Number(n).toLocaleString();
+}
+
+function fmtDate(dt) {
+  if (!dt) return '—';
+  try {
+    const d = new Date(dt);
+    return d.toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', hour12: true });
+  } catch { return String(dt); }
+}
+
+function timeAgo(dt) {
+  if (!dt) return '';
+  const diff = Date.now() - new Date(dt).getTime();
+  const s = Math.floor(diff/1000);
+  if (s < 60) return `${s}s ago`;
+  if (s < 3600) return `${Math.floor(s/60)}m ago`;
+  if (s < 86400) return `${Math.floor(s/3600)}h ago`;
+  return `${Math.floor(s/86400)}d ago`;
+}
+
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function renderPagination(elId, current, total, callback) {
+  const pages = Math.ceil(total / 50);
+  const el = document.getElementById(elId);
+  if (!el || pages <= 1) { if(el) el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <button class="page-btn" ${current===0?'disabled':''} onclick="(${callback.toString()})(${current-1})">← Prev</button>
+    <span style="font-size:12px;color:var(--text-dim)">Page ${current+1} / ${pages}</span>
+    <button class="page-btn" ${current>=pages-1?'disabled':''} onclick="(${callback.toString()})(${current+1})">Next →</button>
+  `;
+}
+
+// ══════════════════════════════════════════════════
+//  STARTUP
+// ══════════════════════════════════════════════════
+(async () => {
+  await initFirebase();
+  // Check if already signed in
+  firebase.auth().onAuthStateChanged(async (user) => {
+    if (user && !currentUser) {
+      await handleAuth(user);
+    }
+  });
+})();
+</script>
+</body>
+</html>
